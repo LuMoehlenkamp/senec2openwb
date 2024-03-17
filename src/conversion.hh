@@ -35,20 +35,65 @@ public:
     boost::split(SplitVec, inString, boost::is_any_of("_"),
                  boost::token_compress_on);
     std::stringstream ss;
-    ss << std::hex << SplitVec[SplitVec.size() - 1];
-    uint x;
-    ss >> x;
     ConversionResult return_val;
+    ss << std::hex << SplitVec[SplitVec.size() - 1];
+    ulong value;
+    ss >> value;
     if (SplitVec[0] == "fl") {
-      return_val = reinterpret_cast<float &>(x);
+      return_val = reinterpret_cast<float &>(value);
       return return_val;
-    }
-    if (SplitVec[0] == "u8" || SplitVec[0] == "u3") {
-      return_val = x;
+    } else if (SplitVec[0] == "u8" || SplitVec[0] == "u3") {
+      if (value > static_cast<unsigned long long>(UINT_MAX)) {
+        throw std::out_of_range("Unsigned value overflows uint");
+      }
+      return_val = static_cast<uint>(value);
+      return return_val;
+    } else if (SplitVec[0] == "i3") {
+      if (value > static_cast<unsigned long long>(INT_MAX)) {
+        throw std::out_of_range("Unsigned value overflows int");
+      }
+      return_val = static_cast<int>(value);
       return return_val;
     }
     return boost::none;
   }
+
+  // static ConversionResultOpt Convert(const std::string &inString) {
+  //   std::stringstream ss(inString);
+  //   std::string prefix;
+  //   std::string value_string;
+  //   constexpr char separator('_');
+  //   constexpr char prefix_fl[]("fl");
+  //   constexpr char prefix_i3[]("i3");
+  //   constexpr char prefix_u3[]("u3");
+  //   constexpr char prefix_u8[]("u8");
+  //   ConversionResultOpt return_val;
+
+  //   std::getline(ss, prefix, separator);
+  //   // std::getline(ss, value_string);
+
+  //   uint x;
+  //   ss >> x;
+  //   if (prefix == prefix_fl) {
+  //     float value(0.0f);
+  //     ss >> std::hex >> value;
+  //     return_val = value;
+
+  //   } else if (prefix == prefix_i3) {
+  //     int value(0);
+  //     ss >> std::hex >> value;
+  //     return_val = value;
+
+  //   } else if (prefix == prefix_u3 || prefix == prefix_u8) {
+  //     unsigned long long value;
+  //     ss >> std::hex >> value;
+  //     if (value > static_cast<unsigned long long>(INT_MAX)) {
+  //       throw std::out_of_range("Unsigned value overflows int");
+  //     }
+  //     return_val = static_cast<int>(value);
+  //   }
+  //   return return_val;
+  // }
 };
 
 } // namespace S2O

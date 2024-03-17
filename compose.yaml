@@ -1,0 +1,29 @@
+version: '3'
+services:
+  senec2openwb:
+    image: ludgerm/senec2openwb
+    volumes:
+      - ./bin/dat:/app/dat
+      # - ./bin/res:/app/res
+    networks:
+      - mosquitto
+    user: ludger:ludger
+    environment:
+      - PUID=1000
+      - PGID=1000
+  mosquitto:
+    image: eclipse-mosquitto
+    ports:
+      - 1883:1883
+      - 9001:9001
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks:
+      - mosquitto
+
+networks:
+  mosquitto:
+    name: mosquitto
+    driver: bridge

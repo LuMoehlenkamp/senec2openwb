@@ -5,7 +5,6 @@
 
 #include <boost/bind/bind.hpp>
 #include <boost/property_tree/json_parser.hpp>
-#include <boost/property_tree/ptree.hpp>
 #include <string>
 
 using namespace boost;
@@ -19,15 +18,18 @@ SenecDataAcquisitionCurl::SenecDataAcquisitionCurl(io_context &ioContext,
   : mrIoContext(ioContext)
   , mTimerDuration(TimerDuration)
   , mTimer(ioContext, std::chrono::seconds(INITIAL_TIMER_DURATION))
+  , mPublisher()
 {
   mTimer.async_wait(bind(&SenecDataAcquisitionCurl::Acquire, this));
 }
 
 void SenecDataAcquisitionCurl::Acquire()
 {
+  mTree.clear();
   try
   {
-    std::system("./dat/curl_command");
+    // ToDo: check path existence, non existend -> exit
+    std::system("./dat/curl_command.sh");
     // std::cout << std::ifstream("curl_test.txt").rdbuf();
 
     mTimer.expires_after(std::chrono::seconds(mTimerDuration));
@@ -37,24 +39,46 @@ void SenecDataAcquisitionCurl::Acquire()
   {
     std::cerr << e.what() << '\n';
   }
-  boost::property_tree::basic_ptree<std::string, std::string> tree;
 
   try {
-    boost::property_tree::read_json("./dat/curl_cmd_response", tree);
-    std::string time = tree.get<std::string>("RTC.WEB_TIME");
+    boost::property_tree::read_json("./res/curl_cmd_response.json", mTree);
+
+    std::string utc_offset = mTree.get<std::string>("RTC.UTC_OFFSET");
+    ConversionResultOpt utc_offset_cr = Conversion::Convert(utc_offset);
+
+    std::string time = mTree.get<std::string>("RTC.WEB_TIME");
+
     ConversionResultOpt time_cr = Conversion::Convert(time);
-    if (time_cr.is_initialized())
+    if (time_cr.is_initialized() && utc_offset_cr.is_initialized())
     {
-      unsigned x = reinterpret_cast<unsigned &>(time_cr.get());
-      std::cout << "time: " << time_cr.get() << '\n';
-      std::chrono::seconds time_sec(x);
-      // std::chrono::_V2::system_clock::time_point time_tp(time_sec);
-      // std::cout << "time (chrono): " << time_tp.time_since_epoch(). << '\n';
+      auto utc_offset = boost::get<int>(utc_offset_cr.get());
+      std::chrono::minutes offset_minutes(utc_offset);
+      std::chrono::seconds offset_seconds(offset_minutes);
+
+      auto timestamp = boost::get<uint>(time_cr.get());
+      std::time_t time_s_epoch = static_cast<std::time_t>(timestamp - offset_seconds.count());
+      std::stringstream ss;
+      ss << std::put_time(std::localtime(&time_s_epoch), "%F %T.\n");
+
+      // Print the formatted timestamp
+      std::cout << "Timestamp: " << ss.str() << '\n';
+
+      mPublisher.publishTime(ss.str());
+    }
+
+    std::string battery_soc = mTree.get<std::string>("ENERGY.GUI_BAT_DATA_FUEL_CHARGE");
+    ConversionResultOpt battery_soc_cr = Conversion::Convert(battery_soc);
+    if (battery_soc_cr.is_initialized())
+    {
+      auto bat_soc = boost::get<float>(battery_soc_cr.get());
+      std::cout << "SOC: " << bat_soc << std::endl;
+      std::cout << "SOC (str): " << std::to_string(bat_soc) << "\n";
+
+      mPublisher.publishFloat("openWB/housebattery/%Soc", bat_soc);
     }
   } catch (const std::exception &e) {
     std::cerr << e.what() << '\n';
   }
-
 }
 
 // clang-format on
