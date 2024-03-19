@@ -6,6 +6,7 @@
 #include <boost/bind/bind.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <string>
+#include <vector>
 
 using namespace boost;
 using namespace boost::asio;
@@ -29,6 +30,7 @@ void SenecDataAcquisitionCurl::Acquire()
   try
   {
     // ToDo: check path existence, non existend -> exit
+    std::cout << "issuing curl command." << '\n';
     std::system("./dat/curl_command.sh");
     // std::cout << std::ifstream("curl_test.txt").rdbuf();
 
@@ -63,10 +65,11 @@ void SenecDataAcquisitionCurl::Acquire()
       // Print the formatted timestamp
       std::cout << "Timestamp: " << ss.str() << '\n';
 
-      mPublisher.publishTime(ss.str());
+      mPublisher.publishTime(ss.str()); // todo: rework this method
     }
 
-    std::string battery_soc = mTree.get<std::string>("ENERGY.GUI_BAT_DATA_FUEL_CHARGE");
+    const std::string mosq_bat_soc_str("openWB/set/houseBattery/%Soc");
+    std::string battery_soc = mTree.get<std::string>("ENERGY.GUI_BAT_DATA_FUEL_CHARGE"); // fl
     ConversionResultOpt battery_soc_cr = Conversion::Convert(battery_soc);
     if (battery_soc_cr.is_initialized())
     {
@@ -74,8 +77,45 @@ void SenecDataAcquisitionCurl::Acquire()
       std::cout << "SOC: " << bat_soc << std::endl;
       std::cout << "SOC (str): " << std::to_string(bat_soc) << "\n";
 
-      mPublisher.publishFloat("openWB/housebattery/%Soc", bat_soc);
+      mPublisher.publishFloat(mosq_bat_soc_str, bat_soc);
     }
+
+    std::string inverter_power = mTree.get<std::string>("ENERGY.GUI_INVERTER_POWER"); // todo: invert this number // fl
+    const std::string mosq_inv_power_str("openWB/set/pv/1/W");
+
+    std::string grid_power = mTree.get<std::string>("ENERGY.GUI_GRID_POWER"); // fl
+    const std::string mosq_grid_power_str("openWB/set/evu/W");
+
+    std::string bat_power = mTree.get<std::string>("ENERGY.GUI_BAT_DATA_POWER"); // fl
+    const std::string mosq_bat_power_str("openWB/set/houseBattery/W");
+
+    std::string frequency = mTree.get<std::string>("PM1OBJ1.FREQ"); // fl
+    const std::string mosq_freq_str("openWB/set/evu/HzFrequenz");
+
+    boost::property_tree::ptree power_vector_node = mTree.get_child("PM1OBJ1.P_AC"); // values not needed but signs for currents // fl
+    for (const auto& vec_entry : power_vector_node) {
+      std::string name = vec_entry.first;  // Access vector name (if applicable)
+
+      // Access vector data (assuming data is an array of doubles)
+      // std::vector<std::string> values = vec_entry.second.get<std::vector<std::string> >("data");
+
+      // Process vector data
+      // ...
+  }
+
+    boost::property_tree::ptree voltage_vector_node = mTree.get_child("PM1OBJ1.U_AC"); // fl
+    const std::string mosq_grid_volt_a_str("openWB/set/evu/VPhase1");
+    const std::string mosq_grid_volt_b_str("openWB/set/evu/VPhase2");
+    const std::string mosq_grid_volt_c_str("openWB/set/evu/VPhase3");
+
+    // std::string grid_cur = mTree.get<std::string>("PM1OBJ1.I_AC");
+    // std::vector<std::string> grid_cur_vec = mTree.get<std::vector<std::string>("PM1OBJ1.I_AC");
+    boost::property_tree::ptree current_vector_node = mTree.get_child("PM1OBJ1.I_AC"); // fl
+    const std::string mosq_grid_cur_a_str("openWB/set/evu/APhase1"); // todo take sign from power phase a
+    const std::string mosq_grid_cur_b_str("openWB/set/evu/APhase2"); // todo take sign from power phase b
+    const std::string mosq_grid_cur_c_str("openWB/set/evu/APhase3"); // todo take sign from power phase c
+
+
   } catch (const std::exception &e) {
     std::cerr << e.what() << '\n';
   }
