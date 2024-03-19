@@ -74,7 +74,7 @@ void SenecDataAcquisitionCurl::Acquire()
     ConversionResultOpt inverter_power_cr = Conversion::Convert(inverter_power);
     if (inverter_power_cr.is_initialized())
     {
-      auto inv_pow = boost::get<float>(inverter_power_cr.get());
+      auto inv_pow = -1.0f * boost::get<float>(inverter_power_cr.get());
       // std::cout << "inverter power: " << inv_pow << '\n';
       mPublisher.publishInt(mosq_inv_power_str, static_cast<int>(inv_pow));
     }
