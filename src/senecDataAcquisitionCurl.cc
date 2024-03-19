@@ -85,7 +85,7 @@ void SenecDataAcquisitionCurl::Acquire()
     {
       auto inv_pow = boost::get<float>(inverter_power_cr.get());
       // std::cout << "inverter power: " << inv_pow << '\n';
-      mPublisher.publishFloat(mosq_inv_power_str, static_cast<int>(inv_pow));
+      mPublisher.publishInt(mosq_inv_power_str, static_cast<int>(inv_pow));
     }
 
     std::string grid_power = mTree.get<std::string>("ENERGY.GUI_GRID_POW"); // fl
