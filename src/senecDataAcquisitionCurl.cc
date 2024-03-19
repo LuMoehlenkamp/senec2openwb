@@ -83,8 +83,10 @@ void SenecDataAcquisitionCurl::Acquire()
     std::string inverter_power = mTree.get<std::string>("ENERGY.GUI_INVERTER_POWER"); // todo: invert this number // fl
     const std::string mosq_inv_power_str("openWB/set/pv/1/W");
 
-    std::string grid_power = mTree.get<std::string>("ENERGY.GUI_GRID_POWER"); // fl
+    std::string grid_power = mTree.get<std::string>("ENERGY.GUI_GRID_POW"); // fl
     const std::string mosq_grid_power_str("openWB/set/evu/W");
+
+    std::string house_power = mTree.get<std::string>("ENERGY.GUI_HOUSE_POW"); // fl
 
     std::string bat_power = mTree.get<std::string>("ENERGY.GUI_BAT_DATA_POWER"); // fl
     const std::string mosq_bat_power_str("openWB/set/houseBattery/W");
