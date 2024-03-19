@@ -1,1 +1,1 @@
-curl -sk https://192.168.178.40/lala.cgi -H 'Content-Type: application/json' -d '{"ENERGY":{"GUI_HOUSE_POW":"","GUI_GRID_POW":"","GUI_INVERTER_POWER":"","GUI_BAT_DATA_POWER":"","GUI_BAT_DATA_FUEL_CHARGE":"","STAT_STATE":""},"PM1OBJ1":{},"PM1OBJ2":{},"RTC":{}}' >./dat/curl_cmd_response.json
+curl -sk https://192.168.178.40/lala.cgi -H 'Content-Type: application/json' -d '{"ENERGY":{"GUI_HOUSE_POW":"","GUI_GRID_POW":"","GUI_INVERTER_POWER":"","GUI_BAT_DATA_POWER":"","GUI_BAT_DATA_FUEL_CHARGE":"","STAT_STATE":""},"PM1OBJ1":{},"PM1OBJ2":{},"RTC":{}}' >./res/curl_cmd_response.json
