@@ -100,7 +100,7 @@ void SenecDataAcquisitionCurl::Acquire()
     ConversionResultOpt grid_power_cr = Conversion::Convert(grid_power);
     if (grid_power_cr.is_initialized())
     {
-      auto grid_pow = boost::get<float>(inverter_power_cr.get());
+      auto grid_pow = boost::get<float>(grid_power_cr.get());
       mPublisher.publishInt(mosq_grid_power_str, static_cast<int>(grid_pow));
     }
 
