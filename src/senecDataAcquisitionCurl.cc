@@ -78,7 +78,7 @@ void SenecDataAcquisitionCurl::Acquire()
       mPublisher.publishFloat(mosq_bat_soc_str, bat_soc);
     }
 
-    const std::string mosq_inv_power_str("openWB/pv/1/W");
+    const std::string mosq_inv_power_str("openWB/set/pv/1/W");
     std::string inverter_power = mTree.get<std::string>("ENERGY.GUI_INVERTER_POWER"); // todo: invert this number // fl
     ConversionResultOpt inverter_power_cr = Conversion::Convert(inverter_power);
     if (inverter_power_cr.is_initialized())
