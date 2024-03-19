@@ -56,6 +56,7 @@ public:
   mqttPublisher();
   void publishTime(const std::string &timestr);
   void publishFloat(const std::string &topic, float value);
+  void publishInt(const std::string &topic, int value);
 
 private:
   std::string mIpAddress;
