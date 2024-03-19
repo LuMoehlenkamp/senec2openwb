@@ -2,6 +2,9 @@ version: '3'
 services:
   senec2openwb:
     image: ludgerm/senec2openwb
+    depends_on:
+      mosquitto:
+        condition: service_healthy
     volumes:
       - ./bin/dat:/app/dat
       # - ./bin/res:/app/res

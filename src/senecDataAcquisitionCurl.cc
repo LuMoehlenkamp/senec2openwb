@@ -113,7 +113,7 @@ void SenecDataAcquisitionCurl::Acquire()
       mPublisher.publishFloat(mosq_freq_str, freq);
     }
 
-    boost::property_tree::ptree power_vector_node = mTree.get_child("PM1OBJ1.P_AC"); // values not needed but signs for currents // fl
+    boost::property_tree::ptree power_vector_node = mTree.get_child("PM1OBJ1.P_AC"); // fl
     const std::string mosq_grid_pow_a_str("openWB/set/evu/WPhase1");
     const std::string mosq_grid_pow_b_str("openWB/set/evu/WPhase2");
     const std::string mosq_grid_pow_c_str("openWB/set/evu/WPhase2");
