@@ -30,7 +30,7 @@ void SenecDataAcquisitionCurl::Acquire()
   try
   {
     // ToDo: check path existence, non existend -> exit
-    std::cout << "issuing curl command." << '\n';
+    // std::cout << "issuing curl command." << '\n';
     std::system("./dat/curl_command.sh");
     // std::cout << std::ifstream("curl_test.txt").rdbuf();
 
@@ -58,13 +58,12 @@ void SenecDataAcquisitionCurl::Acquire()
       std::chrono::seconds offset_seconds(offset_minutes);
 
       auto timestamp = boost::get<uint>(time_cr.get());
-      std::time_t time_s_epoch = static_cast<std::time_t>(timestamp - offset_seconds.count());
+      // std::time_t time_s_epoch = static_cast<std::time_t>(timestamp - offset_seconds.count());
+      std::time_t time_s_epoch = static_cast<std::time_t>(timestamp);
       std::stringstream ss;
       ss << std::put_time(std::localtime(&time_s_epoch), "%F %T.\n");
-
       // Print the formatted timestamp
-      std::cout << "Timestamp: " << ss.str() << '\n';
-
+      // std::cout << "Timestamp: " << ss.str() << '\n';
       mPublisher.publishTime(ss.str()); // todo: rework this method
     }
 
@@ -74,14 +73,19 @@ void SenecDataAcquisitionCurl::Acquire()
     if (battery_soc_cr.is_initialized())
     {
       auto bat_soc = boost::get<float>(battery_soc_cr.get());
-      std::cout << "SOC: " << bat_soc << std::endl;
-      std::cout << "SOC (str): " << std::to_string(bat_soc) << "\n";
-
+      // std::cout << "SOC: " << bat_soc << std::endl;
+      // std::cout << "SOC (str): " << std::to_string(bat_soc) << "\n";
       mPublisher.publishFloat(mosq_bat_soc_str, bat_soc);
     }
 
-    std::string inverter_power = mTree.get<std::string>("ENERGY.GUI_INVERTER_POWER"); // todo: invert this number // fl
     const std::string mosq_inv_power_str("openWB/set/pv/1/W");
+    std::string inverter_power = mTree.get<std::string>("ENERGY.GUI_INVERTER_POWER"); // todo: invert this number // fl
+    ConversionResultOpt inverter_power_cr = Conversion::Convert(inverter_power);
+    if (inverter_power_cr.is_initialized())
+    {
+      auto inv_pow = boost::get<float>(inverter_power_cr.get());
+      mPublisher.publishFloat(mosq_inv_power_str, inv_pow);
+    }
 
     std::string grid_power = mTree.get<std::string>("ENERGY.GUI_GRID_POW"); // fl
     const std::string mosq_grid_power_str("openWB/set/evu/W");
