@@ -58,6 +58,36 @@ public:
     return boost::none;
   }
 
+  static void ConvertToString(const std::string &inString,
+                              std::string &outString) {
+    try {
+      split_vector_type SplitVec;
+      boost::split(SplitVec, inString, boost::is_any_of("_"),
+                   boost::token_compress_on);
+      std::stringstream ss;
+      ConversionResult return_val;
+      ss << std::hex << SplitVec[SplitVec.size() - 1];
+      ulong value;
+      ss >> value;
+      if (SplitVec[0] == "fl") {
+        float f_value = reinterpret_cast<float &>(value);
+        outString = std::to_string(f_value);
+      } else if (SplitVec[0] == "u8" || SplitVec[0] == "u3") {
+        if (value > static_cast<unsigned long long>(UINT_MAX)) {
+          throw std::out_of_range("Unsigned value overflows uint");
+        }
+        outString = std::to_string(static_cast<uint>(value));
+      } else if (SplitVec[0] == "i3") {
+        if (value > static_cast<unsigned long long>(INT_MAX)) {
+          throw std::out_of_range("Unsigned value overflows int");
+        }
+        outString = std::to_string(static_cast<int>(value));
+      }
+    } catch (const std::exception &e) {
+      std::cerr << e.what() << '\n';
+    }
+  }
+
   // static ConversionResultOpt Convert(const std::string &inString) {
   //   std::stringstream ss(inString);
   //   std::string prefix;

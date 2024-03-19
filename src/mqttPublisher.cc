@@ -47,3 +47,11 @@ void mqttPublisher::publishInt(const std::string &topic, int value) {
   if (mClient.is_connected())
     mClient.publish(pubmsg)->wait_for(TIMEOUT);
 }
+
+void mqttPublisher::publishStr(const std::string &topic,
+                               const std::string &valueStr) {
+  mqtt::message_ptr pubmsg =
+      mqtt::make_message(topic, valueStr.c_str(), QOS, false);
+  if (mClient.is_connected())
+    mClient.publish(pubmsg)->wait_for(TIMEOUT);
+}

@@ -57,6 +57,7 @@ public:
   void publishTime(const std::string &timestr);
   void publishFloat(const std::string &topic, float value);
   void publishInt(const std::string &topic, int value);
+  void publishStr(const std::string &topic, const std::string &valueStr);
 
 private:
   std::string mIpAddress;

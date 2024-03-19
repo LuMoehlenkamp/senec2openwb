@@ -58,114 +58,125 @@ void SenecDataAcquisitionCurl::Acquire()
       std::chrono::seconds offset_seconds(offset_minutes);
 
       auto timestamp = boost::get<uint>(time_cr.get());
-      // std::time_t time_s_epoch = static_cast<std::time_t>(timestamp - offset_seconds.count());
       std::time_t time_s_epoch = static_cast<std::time_t>(timestamp);
       std::stringstream ss;
       ss << std::put_time(std::localtime(&time_s_epoch), "%F %T.\n");
-      // Print the formatted timestamp
-      // std::cout << "Timestamp: " << ss.str() << '\n';
       mPublisher.publishTime(ss.str()); // todo: rework this method
     }
 
     // openWB/set/pv/1/W PV-Erzeugungsleistung in Watt, int, positiv
     // openWB/set/pv/1/WhCounter Erzeugte Energie in Wh, float, nur positiv // ToDo: add integrator
-    const std::string mosq_inv_power_str("openWB/set/pv/1/W");
-    std::string inverter_power = mTree.get<std::string>("ENERGY.GUI_INVERTER_POWER"); // todo: invert this number // fl
-    ConversionResultOpt inverter_power_cr = Conversion::Convert(inverter_power);
-    if (inverter_power_cr.is_initialized())
-    {
-      auto inv_pow = -1.0f * boost::get<float>(inverter_power_cr.get());
-      // std::cout << "inverter power: " << inv_pow << '\n';
-      mPublisher.publishInt(mosq_inv_power_str, static_cast<int>(inv_pow));
-    }
+    const std::string topic_inv_power_str("openWB/set/pv/1/W");
+    const std::string senec_inv_power_str("ENERGY.GUI_INVERTER_POWER");
+    std::string inv_power_raw_str = mTree.get<std::string>(senec_inv_power_str); // todo: invert this number // fl
+    std::string inv_power_pub_str;
+    Conversion::ConvertToString(inv_power_raw_str, inv_power_pub_str);
+    mPublisher.publishStr(topic_inv_power_str, inv_power_pub_str);
 
-    // openWB/set/evu/W Bezugsleistung in Watt, int, positiv Bezug, negativ Einspeisung                                   -> done
-    // openWB/set/evu/APhase1 Strom in Ampere für Phase 1, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
-    // openWB/set/evu/APhase2 Strom in Ampere für Phase 2, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
-    // openWB/set/evu/APhase3 Strom in Ampere für Phase 3, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
     // openWB/set/evu/WhImported Bezogene Energie in Wh, float, Punkt als Trenner, nur positiv
     // openWB/set/evu/WhExported Eingespeiste Energie in Wh, float, Punkt als Trenner, nur positiv
-    // openWB/set/evu/VPhase1 Spannung in Volt für Phase 1, float, Punkt als Trenner
-    // openWB/set/evu/VPhase2 Spannung in Volt für Phase 2, float, Punkt als Trenner
-    // openWB/set/evu/VPhase3 Spannung in Volt für Phase 3, float, Punkt als Trenner
-    // openWB/set/evu/HzFrequenz oder openWB/set/evu/Hz Netzfrequenz in Hz, float, Punkt als Trenner                      -> done
-    // openWB/set/evu/WPhase1 Leistung in Watt für Phase 1, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
-    // openWB/set/evu/WPhase2 Leistung in Watt für Phase 2, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
-    // openWB/set/evu/WPhase3 Leistung in Watt für Phase 3, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
+
+
     // openWB/set/evu/PfPhase1 Powerfaktor für Phase 1, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
     // openWB/set/evu/PfPhase2 Powerfaktor für Phase 2, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
     // openWB/set/evu/PfPhase3 Powerfaktor für Phase 3, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
-    const std::string mosq_grid_power_str("openWB/set/evu/W");
-    std::string grid_power = mTree.get<std::string>("ENERGY.GUI_GRID_POW"); // fl
-    ConversionResultOpt grid_power_cr = Conversion::Convert(grid_power);
-    if (grid_power_cr.is_initialized())
-    {
-      auto grid_pow = boost::get<float>(grid_power_cr.get());
-      mPublisher.publishInt(mosq_grid_power_str, static_cast<int>(grid_pow));
-    }
 
-    const std::string mosq_freq_str("openWB/set/evu/HzFrequenz");
-    std::string frequency = mTree.get<std::string>("PM1OBJ1.FREQ"); // fl
-    ConversionResultOpt frequency_cr = Conversion::Convert(frequency);
-    if (frequency_cr.is_initialized())
-    {
-      auto freq = boost::get<float>(frequency_cr.get());
-      mPublisher.publishFloat(mosq_freq_str, freq);
-    }
+    // openWB/set/evu/W Bezugsleistung in Watt, int, positiv Bezug, negativ Einspeisung                                   -> done, float->int
+    const std::string topic_grid_power_str("openWB/set/evu/W");
+    const std::string senec_grid_power_str("ENERGY.GUI_GRID_POW");
+    std::string grid_power_raw_str = mTree.get<std::string>(senec_grid_power_str);
+    std::string grid_power_pub_str;
+    Conversion::ConvertToString(grid_power_raw_str, grid_power_pub_str);
+    mPublisher.publishStr(topic_grid_power_str, grid_power_pub_str);
 
-    boost::property_tree::ptree power_vector_node = mTree.get_child("PM1OBJ1.P_AC"); // fl
-    const std::string mosq_grid_pow_a_str("openWB/set/evu/WPhase1");
-    const std::string mosq_grid_pow_b_str("openWB/set/evu/WPhase2");
-    const std::string mosq_grid_pow_c_str("openWB/set/evu/WPhase2");
-    for (const auto& vec_entry : power_vector_node) {
-      std::string name = vec_entry.first;  // Access vector name (if applicable)
+    // openWB/set/evu/HzFrequenz oder openWB/set/evu/Hz Netzfrequenz in Hz, float, Punkt als Trenner                      -> done, float->float
+    const std::string topic_freq_str("openWB/set/evu/HzFrequenz");
+    const std::string senec_freq_str("PM1OBJ1.FREQ");
+    std::string frequency_raw_str = mTree.get<std::string>(senec_freq_str);
+    std::string frequency_pub_str;
+    Conversion::ConvertToString(frequency_raw_str, frequency_pub_str);
+    mPublisher.publishStr(topic_freq_str, frequency_pub_str);
 
-      // Access vector data (assuming data is an array of doubles)
-      // std::vector<std::string> values = vec_entry.second.get<std::vector<std::string> >("data");
+    // openWB/set/evu/WPhase1 Leistung in Watt für Phase 1, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
+    // openWB/set/evu/WPhase2 Leistung in Watt für Phase 2, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
+    // openWB/set/evu/WPhase3 Leistung in Watt für Phase 3, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
 
-      // Process vector data
-      // ...
-    }
+    // std::vector<std::string> topic_grid_powers_str_vec = {"openWB/set/evu/WPhase1", "openWB/set/evu/WPhase2", "openWB/set/evu/WPhase3"};
+    // const std::string senec_powers_str("PM1OBJ1.P_AC");
+    // std::vector<std::string> powers_raw_str_vec;
+    // std::vector<std::string> powers_pub_str_vec;
+    // for (boost::property_tree::ptree::value_type &power : mTree.get_child(senec_powers_str)) // fl
+    // {
+    //   powers_raw_str_vec.push_back(power.second.data());
+    // }
+    // for (auto topics_it = topic_grid_powers_str_vec.begin(), raw_it = powers_raw_str_vec.begin(), pub_it = powers_pub_str_vec.begin();
+    //      raw_it != powers_raw_str_vec.end();
+    //      ++topics_it, ++raw_it, ++pub_it)
+    // {
+    //   Conversion::ConvertToString(*raw_it, *pub_it);
+    //   mPublisher.publishStr(*topics_it, *pub_it);
+    // }
 
-    boost::property_tree::ptree voltage_vector_node = mTree.get_child("PM1OBJ1.U_AC"); // fl
-    const std::string mosq_grid_volt_a_str("openWB/set/evu/VPhase1");
-    const std::string mosq_grid_volt_b_str("openWB/set/evu/VPhase2");
-    const std::string mosq_grid_volt_c_str("openWB/set/evu/VPhase3");
+    // openWB/set/evu/VPhase1 Spannung in Volt für Phase 1, float, Punkt als Trenner
+    // openWB/set/evu/VPhase2 Spannung in Volt für Phase 2, float, Punkt als Trenner
+    // openWB/set/evu/VPhase3 Spannung in Volt für Phase 3, float, Punkt als Trenner
 
-    // std::string grid_cur = mTree.get<std::string>("PM1OBJ1.I_AC");
-    // std::vector<std::string> grid_cur_vec = mTree.get<std::vector<std::string>("PM1OBJ1.I_AC");
-    boost::property_tree::ptree current_vector_node = mTree.get_child("PM1OBJ1.I_AC"); // fl
-    const std::string mosq_grid_cur_a_str("openWB/set/evu/APhase1"); // todo take sign from power phase a
-    const std::string mosq_grid_cur_b_str("openWB/set/evu/APhase2"); // todo take sign from power phase b
-    const std::string mosq_grid_cur_c_str("openWB/set/evu/APhase3"); // todo take sign from power phase c
+    // std::vector<std::string> topic_grid_volts_str_vec = {"openWB/set/evu/VPhase1", "openWB/set/evu/VPhase2", "openWB/set/evu/VPhase3"};
+    // const std::string senec_volts_str("PM1OBJ1.U_AC");
+    // std::vector<std::string> volts_raw_str_vec;
+    // std::vector<std::string> volts_pub_str_vec;
+    // for (boost::property_tree::ptree::value_type &voltage : mTree.get_child(senec_volts_str)) // fl
+    // {
+    //   volts_raw_str_vec.push_back(voltage.second.data());
+    // }
+    // for (auto topics_it = topic_grid_volts_str_vec.begin(), raw_it = volts_raw_str_vec.begin(), pub_it = volts_pub_str_vec.begin();
+    //      raw_it != volts_raw_str_vec.end();
+    //      ++topics_it, ++raw_it, ++pub_it)
+    // {
+    //   Conversion::ConvertToString(*raw_it, *pub_it);
+    //   mPublisher.publishStr(*topics_it, *pub_it);
+    // }
+
+    // openWB/set/evu/APhase1 Strom in Ampere für Phase 1, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
+    // openWB/set/evu/APhase2 Strom in Ampere für Phase 2, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
+    // openWB/set/evu/APhase3 Strom in Ampere für Phase 3, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
+
+    // std::vector<std::string> topic_grid_amps_str_vec = {"openWB/set/evu/APhase1", "openWB/set/evu/APhase2", "openWB/set/evu/APhase3"};
+    // const std::string senec_amps_str("PM1OBJ1.I_AC");
+    // std::vector<std::string> amps_raw_str_vec;
+    // std::vector<std::string> amps_pub_str_vec;
+    // for (boost::property_tree::ptree::value_type &current : mTree.get_child(senec_amps_str)) // fl
+    // {
+    //   amps_raw_str_vec.push_back(current.second.data());
+    // }
+    // for (auto topics_it = topic_grid_amps_str_vec.begin(), raw_it = amps_raw_str_vec.begin(), pub_it = amps_pub_str_vec.begin();
+    //      raw_it != amps_raw_str_vec.end();
+    //      ++topics_it, ++raw_it, ++pub_it)
+    // {
+    //   Conversion::ConvertToString(*raw_it, *pub_it);
+    //   mPublisher.publishStr(*topics_it, *pub_it);
+    // }
 
     // std::string house_power = mTree.get<std::string>("ENERGY.GUI_HOUSE_POW"); // fl
 
-    // openWB/set/houseBattery/W Speicherleistung in Watt, int, positiv Ladung, negativ Entladung   -> done
     // openWB/set/houseBattery/WhImported Geladene Energie in Wh, float, nur positiv
     // openWB/set/houseBattery/WhExported Entladene Energie in Wh, float, nur positiv
-    // openWB/set/houseBattery/%Soc Ladestand des Speichers, int, 0-100                             -> done
 
-    const std::string mosq_bat_power_str("openWB/set/houseBattery/W");
-    std::string bat_power = mTree.get<std::string>("ENERGY.GUI_BAT_DATA_POWER"); // fl
-    ConversionResultOpt bat_power_cr = Conversion::Convert(bat_power);
-    if (bat_power_cr.is_initialized())
-    {
-      auto bat_pow = boost::get<float>(bat_power_cr.get());
-      mPublisher.publishInt(mosq_bat_power_str, static_cast<int>(bat_pow));
-    }
+    // openWB/set/houseBattery/W Speicherleistung in Watt, int, positiv Ladung, negativ Entladung   -> done
+    const std::string topic_bat_power_str("openWB/set/houseBattery/W");
+    const std::string senec_bat_power_str("ENERGY.GUI_BAT_DATA_POWER");
+    std::string bat_power_raw_str = mTree.get<std::string>(senec_bat_power_str);
+    std::string bat_power_pub_str;
+    Conversion::ConvertToString(bat_power_raw_str, bat_power_pub_str);
+    mPublisher.publishStr(topic_bat_power_str, bat_power_pub_str);
 
-    const std::string mosq_bat_soc_str("openWB/set/houseBattery/%Soc");
-    std::string battery_soc = mTree.get<std::string>("ENERGY.GUI_BAT_DATA_FUEL_CHARGE"); // fl
-    ConversionResultOpt battery_soc_cr = Conversion::Convert(battery_soc);
-    if (battery_soc_cr.is_initialized())
-    {
-      auto bat_soc = boost::get<float>(battery_soc_cr.get());
-      // std::cout << "SOC: " << bat_soc << std::endl;
-      // std::cout << "SOC (str): " << std::to_string(bat_soc) << "\n";
-      mPublisher.publishInt(mosq_bat_soc_str, static_cast<int>(bat_soc));
-    }
-
+    // openWB/set/houseBattery/%Soc Ladestand des Speichers, int, 0-100
+    const std::string topic_bat_soc_str("openWB/set/houseBattery/%Soc");
+    std::string senec_bat_soc_str = mTree.get<std::string>("ENERGY.GUI_BAT_DATA_FUEL_CHARGE");
+    std::string bat_soc_raw_str = mTree.get<std::string>(senec_bat_soc_str);
+    std::string bat_soc_pub_str;
+    Conversion::ConvertToString(bat_soc_raw_str, bat_soc_pub_str);
+    mPublisher.publishStr(topic_bat_soc_str, bat_soc_pub_str);
 
   } catch (const std::exception &e) {
     std::cerr << e.what() << '\n';

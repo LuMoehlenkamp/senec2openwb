@@ -4,7 +4,7 @@ services:
     image: ludgerm/senec2openwb
     depends_on:
       mosquitto:
-        condition: service_healthy
+        condition: service_started
     volumes:
       - ./bin/dat:/app/dat
       # - ./bin/res:/app/res
