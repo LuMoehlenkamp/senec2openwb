@@ -43,7 +43,7 @@ void mqttPublisher::publishFloat(const std::string &topic, float value) {
 
 void mqttPublisher::publishInt(const std::string &topic, int value) {
   mqtt::message_ptr pubmsg =
-      mqtt::make_message(topic, std::to_string(value), QOS, false);
+      mqtt::make_message(topic, std::to_string(value).c_str(), QOS, false);
   if (mClient.is_connected())
     mClient.publish(pubmsg)->wait_for(TIMEOUT);
 }
