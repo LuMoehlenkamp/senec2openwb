@@ -46,12 +46,15 @@ void SenecDataAcquisitionCurl::Acquire()
   try {
     boost::property_tree::read_json("./res/curl_cmd_response.json", mTree);
 
+    if (mTree.empty())
+      return;
+
     std::string utc_offset = mTree.get<std::string>("RTC.UTC_OFFSET");
     ConversionResultOpt utc_offset_cr = Conversion::Convert(utc_offset);
 
     std::string time = mTree.get<std::string>("RTC.WEB_TIME");
-
     ConversionResultOpt time_cr = Conversion::Convert(time);
+
     if (time_cr.is_initialized() && utc_offset_cr.is_initialized())
     {
       auto utc_offset = boost::get<int>(utc_offset_cr.get());
@@ -62,25 +65,22 @@ void SenecDataAcquisitionCurl::Acquire()
       std::time_t time_s_epoch = static_cast<std::time_t>(timestamp);
       std::stringstream ss;
       ss << std::put_time(std::localtime(&time_s_epoch), "%F %T.\n");
-      mPublisher.publishTime(ss.str()); // todo: rework this method
+      mPublisher.publishTime(ss.str()); // todo: refactor this method
     }
 
     // openWB/set/pv/1/W PV-Erzeugungsleistung in Watt, int, positiv
-    // openWB/set/pv/1/WhCounter Erzeugte Energie in Wh, float, nur positiv // ToDo: add integrator
     const std::string topic_inv_power_str("openWB/set/pv/1/W");
     const std::string senec_inv_power_str("ENERGY.GUI_INVERTER_POWER");
-    std::string inv_power_raw_str = mTree.get<std::string>(senec_inv_power_str); // todo: invert this number // fl
+    std::string inv_power_raw_str = mTree.get<std::string>(senec_inv_power_str);
     std::string inv_power_pub_str;
     Conversion::ConvertToString(inv_power_raw_str, inv_power_pub_str, false, false);
     mPublisher.publishStr(topic_inv_power_str, inv_power_pub_str);
 
-    // openWB/set/evu/WhImported Bezogene Energie in Wh, float, Punkt als Trenner, nur positiv
-    // openWB/set/evu/WhExported Eingespeiste Energie in Wh, float, Punkt als Trenner, nur positiv
-
-
-    // openWB/set/evu/PfPhase1 Powerfaktor für Phase 1, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
-    // openWB/set/evu/PfPhase2 Powerfaktor für Phase 2, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
-    // openWB/set/evu/PfPhase3 Powerfaktor für Phase 3, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
+    // openWB/set/pv/1/WhCounter Erzeugte Energie in Wh, float, nur positiv
+    const std::string topic_inv_energy_str("openWB/set/pv/1/WhCounter");
+    float inverter_power(std::stof(inv_power_pub_str));
+    mInverterExportedEnergy.Integrate(inverter_power);
+    mPublisher.publishFloat(topic_inv_energy_str, mInverterExportedEnergy.getIntegratedValue());
 
     // openWB/set/evu/W Bezugsleistung in Watt, int, positiv Bezug, negativ Einspeisung                                   -> done, float->int
     const std::string topic_grid_power_str("openWB/set/evu/W");
@@ -89,6 +89,15 @@ void SenecDataAcquisitionCurl::Acquire()
     std::string grid_power_pub_str;
     Conversion::ConvertToString(grid_power_raw_str, grid_power_pub_str);
     mPublisher.publishStr(topic_grid_power_str, grid_power_pub_str);
+
+    // openWB/set/evu/WhImported Bezogene Energie in Wh, float, Punkt als Trenner, nur positiv
+    // openWB/set/evu/WhExported Eingespeiste Energie in Wh, float, Punkt als Trenner, nur positiv
+    const std::string topic_grid_imported_energy_str("openWB/set/evu/WhImported");
+    const std::string topic_grid_exported_energy_str("openWB/set/evu/WhExported");
+    float grid_power(std::stof(grid_power_pub_str));
+    std::signbit(grid_power) ? mGridExportedEnergy.Integrate(std::abs(grid_power)) : mGridImportedEnergy.Integrate(std::abs(grid_power));
+    mPublisher.publishFloat(topic_grid_imported_energy_str, mGridImportedEnergy.getIntegratedValue());
+    mPublisher.publishFloat(topic_grid_exported_energy_str, mGridExportedEnergy.getIntegratedValue());
 
     // openWB/set/evu/HzFrequenz oder openWB/set/evu/Hz Netzfrequenz in Hz, float, Punkt als Trenner                      -> done, float->float
     const std::string topic_freq_str("openWB/set/evu/HzFrequenz");
@@ -101,7 +110,6 @@ void SenecDataAcquisitionCurl::Acquire()
     // openWB/set/evu/WPhase1 Leistung in Watt für Phase 1, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
     // openWB/set/evu/WPhase2 Leistung in Watt für Phase 2, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
     // openWB/set/evu/WPhase3 Leistung in Watt für Phase 3, float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
-
     std::vector<std::string> topic_grid_powers_str_vec{"openWB/set/evu/WPhase1", "openWB/set/evu/WPhase2", "openWB/set/evu/WPhase3"};
     const std::string senec_powers_str("PM1OBJ1.P_AC");
     std::vector<std::string> powers_raw_str_vec;
@@ -158,9 +166,6 @@ void SenecDataAcquisitionCurl::Acquire()
 
     // std::string house_power = mTree.get<std::string>("ENERGY.GUI_HOUSE_POW"); // fl
 
-    // openWB/set/houseBattery/WhImported Geladene Energie in Wh, float, nur positiv
-    // openWB/set/houseBattery/WhExported Entladene Energie in Wh, float, nur positiv
-
     // openWB/set/houseBattery/W Speicherleistung in Watt, int, positiv Ladung, negativ Entladung   -> done
     const std::string topic_bat_power_str("openWB/set/houseBattery/W");
     const std::string senec_bat_power_str("ENERGY.GUI_BAT_DATA_POWER");
@@ -168,6 +173,15 @@ void SenecDataAcquisitionCurl::Acquire()
     std::string bat_power_pub_str;
     Conversion::ConvertToString(bat_power_raw_str, bat_power_pub_str);
     mPublisher.publishStr(topic_bat_power_str, bat_power_pub_str);
+
+    // openWB/set/houseBattery/WhImported Geladene Energie in Wh, float, nur positiv
+    // openWB/set/houseBattery/WhExported Entladene Energie in Wh, float, nur positiv
+    const std::string topic_bat_imported_energy_str("openWB/set/houseBattery/WhImported");
+    const std::string topic_bat_exported_energy_str("openWB/set/houseBattery/WhExported");
+    float bat_power(std::stof(bat_power_pub_str));
+    std::signbit(bat_power) ? mBatteryExportedEnergy.Integrate(std::abs(bat_power)) : mBatteryImportedEnergy.Integrate(std::abs(bat_power));
+    mPublisher.publishFloat(topic_bat_imported_energy_str, mBatteryImportedEnergy.getIntegratedValue());
+    mPublisher.publishFloat(topic_bat_exported_energy_str, mBatteryExportedEnergy.getIntegratedValue());
 
     // openWB/set/houseBattery/%Soc Ladestand des Speichers, int, 0-100
     const std::string topic_bat_soc_str("openWB/set/houseBattery/%Soc");

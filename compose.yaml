@@ -2,6 +2,7 @@ version: '3'
 services:
   senec2openwb:
     image: ludgerm/senec2openwb
+    build: .
     depends_on:
       mosquitto:
         condition: service_started

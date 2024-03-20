@@ -12,6 +12,7 @@
 #include <boost/optional.hpp>
 #include <boost/property_tree/ptree.hpp>
 
+#include "integrator.hh"
 #include "mqttPublisher.hh"
 
 namespace S2O {
@@ -30,6 +31,11 @@ private:
   boost::asio::steady_timer mTimer;
   boost::property_tree::basic_ptree<std::string, std::string> mTree;
   mqttPublisher mPublisher;
+  Integrator mInverterExportedEnergy;
+  Integrator mGridImportedEnergy;
+  Integrator mGridExportedEnergy;
+  Integrator mBatteryImportedEnergy;
+  Integrator mBatteryExportedEnergy;
 };
 
 } // namespace S2O
