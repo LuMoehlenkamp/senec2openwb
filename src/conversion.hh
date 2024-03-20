@@ -59,7 +59,8 @@ public:
   }
 
   static void ConvertToString(const std::string &inString,
-                              std::string &outString) {
+                              std::string &outString, bool invert = false,
+                              bool keepDecimals = false) {
     try {
       split_vector_type SplitVec;
       boost::split(SplitVec, inString, boost::is_any_of("_"),
@@ -67,11 +68,17 @@ public:
       std::stringstream ss;
       ConversionResult return_val;
       ss << std::hex << SplitVec[SplitVec.size() - 1];
-      ulong value;
+      long value;
       ss >> value;
+      if (invert) {
+        value *= -1L;
+      }
       if (SplitVec[0] == "fl") {
         float f_value = reinterpret_cast<float &>(value);
-        outString = std::to_string(f_value);
+        if (keepDecimals)
+          outString = std::to_string(f_value);
+        else
+          outString = std::to_string(static_cast<long>(f_value));
       } else if (SplitVec[0] == "u8" || SplitVec[0] == "u3") {
         if (value > static_cast<unsigned long long>(UINT_MAX)) {
           throw std::out_of_range("Unsigned value overflows uint");
