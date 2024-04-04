@@ -1,9 +1,12 @@
 #include "integrator.hh"
 #include <ctime>
-#include <iostream>
+#include <iomanip>
+#include <sstream>
 
 using namespace std::chrono_literals;
 using namespace S2O;
+
+const int Integrator::DECIMALS = 2;
 
 void Integrator::Integrate(const float &value) {
   time_now_opt = std::chrono::system_clock::now();
@@ -40,3 +43,9 @@ bool Integrator::DayChangeOccured(
 }
 
 void Integrator::Reset() { integrated_value = 0.0f; }
+
+std::string Integrator::getIntegratedValueAsStr(int decimals) const {
+  std::stringstream ss;
+  ss << std::fixed << std::setprecision(decimals) << integrated_value;
+  return ss.str();
+}

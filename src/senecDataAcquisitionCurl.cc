@@ -80,7 +80,7 @@ void SenecDataAcquisitionCurl::Acquire()
     const std::string topic_inv_energy_str("openWB/set/pv/1/WhCounter");
     float inverter_power(std::stof(inv_power_pub_str));
     mInverterExportedEnergy.Integrate(inverter_power);
-    mPublisher.publishFloat(topic_inv_energy_str, mInverterExportedEnergy.getIntegratedValue());
+    mPublisher.publishStr(topic_inv_energy_str, mInverterExportedEnergy.getIntegratedValueAsStr());
 
     // openWB/set/evu/W Bezugsleistung in Watt, int, positiv Bezug, negativ Einspeisung                                   -> done, float->int
     const std::string topic_grid_power_str("openWB/set/evu/W");
@@ -96,8 +96,8 @@ void SenecDataAcquisitionCurl::Acquire()
     const std::string topic_grid_exported_energy_str("openWB/set/evu/WhExported");
     float grid_power(std::stof(grid_power_pub_str));
     std::signbit(grid_power) ? mGridExportedEnergy.Integrate(std::abs(grid_power)) : mGridImportedEnergy.Integrate(std::abs(grid_power));
-    mPublisher.publishFloat(topic_grid_imported_energy_str, mGridImportedEnergy.getIntegratedValue());
-    mPublisher.publishFloat(topic_grid_exported_energy_str, mGridExportedEnergy.getIntegratedValue());
+    mPublisher.publishStr(topic_grid_imported_energy_str, mGridImportedEnergy.getIntegratedValueAsStr());
+    mPublisher.publishStr(topic_grid_exported_energy_str, mGridExportedEnergy.getIntegratedValueAsStr());
 
     // openWB/set/evu/HzFrequenz oder openWB/set/evu/Hz Netzfrequenz in Hz, float, Punkt als Trenner                      -> done, float->float
     const std::string topic_freq_str("openWB/set/evu/HzFrequenz");
@@ -180,8 +180,8 @@ void SenecDataAcquisitionCurl::Acquire()
     const std::string topic_bat_exported_energy_str("openWB/set/houseBattery/WhExported");
     float bat_power(std::stof(bat_power_pub_str));
     std::signbit(bat_power) ? mBatteryExportedEnergy.Integrate(std::abs(bat_power)) : mBatteryImportedEnergy.Integrate(std::abs(bat_power));
-    mPublisher.publishFloat(topic_bat_imported_energy_str, mBatteryImportedEnergy.getIntegratedValue());
-    mPublisher.publishFloat(topic_bat_exported_energy_str, mBatteryExportedEnergy.getIntegratedValue());
+    mPublisher.publishStr(topic_bat_imported_energy_str, mBatteryImportedEnergy.getIntegratedValueAsStr());
+    mPublisher.publishStr(topic_bat_exported_energy_str, mBatteryExportedEnergy.getIntegratedValueAsStr());
 
     // openWB/set/houseBattery/%Soc Ladestand des Speichers, int, 0-100
     const std::string topic_bat_soc_str("openWB/set/houseBattery/%Soc");

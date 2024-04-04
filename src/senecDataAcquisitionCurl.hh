@@ -1,9 +1,5 @@
 #pragma once
 
-// #include "dataAcquisitionDefines.hh"
-// #include "global.hh"
-// #include "senecResultSubject.hh"
-
 #include <cstdlib>
 #include <iostream>
 #include <istream>
