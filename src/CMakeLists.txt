@@ -9,13 +9,11 @@ find_package(Boost REQUIRED COMPONENTS
                               thread
                               )
 
-# set(PROJECT_LIB ${PROJECT_LIB} ${Boost_LOG_LIBRARY} ${Boost_LOG_SETUP_LIBRARY})
-
 find_package(PahoMqttCpp REQUIRED)
 
 add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
 
-add_executable(${PROJECT_NAME_STR} main.cc configManager.cc senecDataAcquisitionCurl.cc mqttPublisher.cc integrator.cc)
+add_executable(${PROJECT_NAME_STR} main.cc configManager.cc senecDataAcquisition.cc mqttPublisher.cc integrator.cc)
 
 target_link_libraries(${PROJECT_NAME_STR} PUBLIC
                       ${Boost_LIBRARIES}
