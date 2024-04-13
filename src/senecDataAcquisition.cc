@@ -260,10 +260,6 @@ void SenecDataAcquisition::Acquire() {
       std::signbit(bat_power)
           ? mBatteryExportedEnergy.Integrate(std::abs(bat_power))
           : mBatteryImportedEnergy.Integrate(std::abs(bat_power));
-      std::cout << "BAT import: "
-                << mBatteryImportedEnergy.getIntegratedValueAsStr() << '\n';
-      std::cout << "BAT export: "
-                << mBatteryExportedEnergy.getIntegratedValueAsStr() << '\n';
       mPublisher.publishStr(topic_bat_imported_energy_str,
                             mBatteryImportedEnergy.getIntegratedValueAsStr());
       mPublisher.publishStr(topic_bat_exported_energy_str,
