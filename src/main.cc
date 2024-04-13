@@ -28,7 +28,8 @@ int main(int argc, char *argv[]) {
         asio::make_work_guard(ioContext);
     // S2O::SenecDataAcquisitionCurl senec_cda(ioContext,
     //                                         senec_update_time_opt.get());
-
+    S2O::SenecDataAcquisition senec_da(ioContext, ctx,
+                                       senec_update_time_opt.get());
     boost::asio::signal_set signals(ioContext, SIGINT, SIGTERM);
     signals.async_wait(
         [&ioContext](const boost::system::error_code &ec, int signal) {
