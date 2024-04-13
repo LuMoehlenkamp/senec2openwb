@@ -57,7 +57,7 @@ const std::string SEC_FETCH_SITE_VALUE = "same-origin";
 
 const std::string SENEC_REQUEST =
     "{\"PM1OBJ1\":{}, \"PM1OBJ2\":{}, \"BAT1OBJ1\":{}, \"STATISTIC\":{}, "
-    "\"ENERGY\":{}}";
+    "\"ENERGY\":{},\"RTC\":{}}";
 
 const std::string EOF_MESSAGE = "0\r\n\r\n";
 } // namespace S2O
