@@ -1,5 +1,4 @@
 #include <atomic>
-#include <iostream>
 #include <string>
 
 #include "mqtt/async_client.h"

@@ -82,7 +82,7 @@ void SenecDataAcquisitionCurl::Acquire()
     mInverterExportedEnergy.Integrate(inverter_power);
     mPublisher.publishStr(topic_inv_energy_str, mInverterExportedEnergy.getIntegratedValueAsStr());
 
-    // openWB/set/evu/W Bezugsleistung in Watt, int, positiv Bezug, negativ Einspeisung  -> done, float->int
+    // openWB/set/evu/W Bezugsleistung in Watt, int, positiv Bezug, negativ Einspeisung                                   -> done, float->int
     const std::string topic_grid_power_str("openWB/set/evu/W");
     const std::string senec_grid_power_str("ENERGY.GUI_GRID_POW");
     std::string grid_power_raw_str = mTree.get<std::string>(senec_grid_power_str);
@@ -180,8 +180,6 @@ void SenecDataAcquisitionCurl::Acquire()
     const std::string topic_bat_exported_energy_str("openWB/set/houseBattery/WhExported");
     float bat_power(std::stof(bat_power_pub_str));
     std::signbit(bat_power) ? mBatteryExportedEnergy.Integrate(std::abs(bat_power)) : mBatteryImportedEnergy.Integrate(std::abs(bat_power));
-    std::cout << "BAT import: " << mBatteryImportedEnergy.getIntegratedValueAsStr() << '\n';
-    std::cout << "BAT export: " << mBatteryExportedEnergy.getIntegratedValueAsStr() << '\n';
     mPublisher.publishStr(topic_bat_imported_energy_str, mBatteryImportedEnergy.getIntegratedValueAsStr());
     mPublisher.publishStr(topic_bat_exported_energy_str, mBatteryExportedEnergy.getIntegratedValueAsStr());
 
