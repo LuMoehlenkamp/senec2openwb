@@ -6,7 +6,7 @@
 using namespace std::chrono_literals;
 using namespace S2O;
 
-const int Integrator::DECIMALS = 2;
+const int Integrator::DECIMALS = 1;
 
 void Integrator::Integrate(const float &value) {
   time_now_opt = std::chrono::system_clock::now();
@@ -42,7 +42,7 @@ bool Integrator::DayChangeOccured(
   return return_val;
 }
 
-void Integrator::Reset() { integrated_value = 0.0f; }
+void Integrator::Reset() { integrated_value = 0.00f; }
 
 std::string Integrator::getIntegratedValueAsStr(int decimals) const {
   std::stringstream ss;
