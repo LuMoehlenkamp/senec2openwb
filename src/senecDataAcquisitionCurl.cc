@@ -79,7 +79,7 @@ void SenecDataAcquisitionCurl::Acquire()
     // openWB/set/pv/1/WhCounter Erzeugte Energie in Wh, float, nur positiv
     const std::string topic_inv_energy_str("openWB/set/pv/1/WhCounter");
     float inverter_power(std::stof(inv_power_pub_str));
-    mInverterExportedEnergy.Integrate(inverter_power);
+    mInverterExportedEnergy.Integrate(std::abs(inverter_power));
     mPublisher.publishStr(topic_inv_energy_str, mInverterExportedEnergy.getIntegratedValueAsStr());
 
     // openWB/set/evu/W Bezugsleistung in Watt, int, positiv Bezug, negativ Einspeisung                                   -> done, float->int
