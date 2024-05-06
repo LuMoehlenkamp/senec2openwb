@@ -1,6 +1,8 @@
 #include "integrator.hh"
+#include <algorithm>
 #include <ctime>
 #include <iomanip>
+#include <limits>
 #include <sstream>
 
 using namespace std::chrono_literals;
@@ -18,10 +20,12 @@ void Integrator::Integrate(const float &value) {
       constexpr auto ref(
           std::chrono::duration_cast<std::chrono::nanoseconds>(1h));
 
-      auto ratio(static_cast<double>(delta.count()) /
-                 static_cast<double>(ref.count()));
+      auto ratio(static_cast<float>(delta.count()) /
+                 static_cast<float>(ref.count()));
 
-      integrated_value += ratio * value;
+      integrated_value = std::clamp(integrated_value + ratio * value,
+                                    std::numeric_limits<float>::min(),
+                                    std::numeric_limits<float>::max());
     }
   }
   time_last_opt = time_now_opt;
