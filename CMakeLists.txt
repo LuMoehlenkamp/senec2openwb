@@ -10,4 +10,8 @@ file(GLOB_RECURSE SRC_FILES src/*.cc)
 
 add_subdirectory(src)
 
+# testing
+include(CTest)
+add_subdirectory(test)
+
 include_directories(${Boost_INCLUDE_DIRS})
