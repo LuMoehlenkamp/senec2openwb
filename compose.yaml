@@ -10,11 +10,17 @@ services:
       - ./bin/dat:/app/dat
       # - ./bin/res:/app/res
     networks:
-      - mosquitto
+      - mosquitto_net
     user: ludger:ludger
     environment:
       - PUID=1000
       - PGID=1000
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 20s
   mosquitto:
     image: eclipse-mosquitto
     ports:
@@ -25,16 +31,15 @@ services:
       - ./mosquitto/data:/mosquitto/data
       - ./mosquitto/log:/mosquitto/log
     networks:
-      - mosquitto
+      - mosquitto_net
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 5
+        window: 20s
 
 networks:
   mosquitto:
-    name: mosquitto
+    name: mosquitto_net
     driver: bridge
-
-deploy:
-  restart_policy:
-    condition: on-failure
-    delay: 5s
-    max_attempts: 5
-    window: 20s
