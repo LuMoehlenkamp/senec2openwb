@@ -40,6 +40,6 @@ services:
         window: 20s
 
 networks:
-  mosquitto:
+  mosquitto_net:
     name: mosquitto_net
     driver: bridge
