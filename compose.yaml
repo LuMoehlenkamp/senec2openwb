@@ -31,3 +31,10 @@ networks:
   mosquitto:
     name: mosquitto
     driver: bridge
+
+deploy:
+  restart_policy:
+    condition: on-failure
+    delay: 5s
+    max_attempts: 5
+    window: 20s
