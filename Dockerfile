@@ -18,6 +18,7 @@ RUN ldconfig /etc/ld.so.conf.d
 
 WORKDIR /senec2openwb
 COPY src/ ./src/
+COPY test/ ./test/
 COPY CMakeLists.txt .
 
 WORKDIR /senec2openwb/build
