@@ -29,7 +29,7 @@ include_directories(${UNIT_TESTS_INCLUDES})
 # --- build test executables ---
 add_definitions(-DBOOST_TEST_DYN_LINK)
 add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
-add_executable(${PROJECT_UNIT_TESTS_NAME} ${UNIT_TESTS_SRC_FILES} ../src/configManager.cc)
+add_executable(${PROJECT_UNIT_TESTS_NAME} ${UNIT_TESTS_SRC_FILES} ../src/configManager.cc ../src/integrator.cc)
 # add_executable(${PROJECT_UNIT_TESTS_NAME} mainTest.cc powerControlStrategyExcessTest.cc ../src/configManager.cc ../src/powerControlStrategyExcess.cc ../src/senecDataAcquisition.cc ../src/solarDataAcquisition.cc ../src/oneWireSensorInterface.cc)
 # add_executable(${PROJECT_UNIT_TESTS_NAME} mainTest.cc oneWireSensorInterfaceTest.cc ../src/oneWireSensorInterface.cc)
 # set_target_properties(${PROJECT_UNIT_TESTS_NAME} PROPERTIES log_level message)
