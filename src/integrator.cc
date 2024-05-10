@@ -24,7 +24,7 @@ void Integrator::Integrate(const float &value) {
                  static_cast<float>(ref.count()));
 
       integrated_value = std::clamp(integrated_value + ratio * value,
-                                    std::numeric_limits<float>::min(),
+                                    std::numeric_limits<float>::lowest(),
                                     std::numeric_limits<float>::max());
     }
   }
@@ -33,7 +33,6 @@ void Integrator::Integrate(const float &value) {
 
 bool Integrator::DayChangeOccured(
     const std::chrono::time_point<std::chrono::system_clock> &time_now) {
-  // auto now_ep_cnt = time_now.time_since_epoch().count();
   auto now_time_t(std::chrono::system_clock::to_time_t(time_now));
   std::tm *time_info_now = std::localtime(&now_time_t);
   int current_day = time_info_now->tm_mday;
