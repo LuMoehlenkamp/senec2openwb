@@ -1,6 +1,7 @@
 #include "configManager.hh"
 #include "mqtt/async_client.h"
-#include "senecDataAcquisitionCurl.hh"
+// #include "senecDataAcquisitionCurl.hh"
+#include "senecDataAcquisitionLibCurl.hh"
 
 #include <iostream>
 
@@ -24,8 +25,10 @@ int main(int argc, char *argv[]) {
     boost::asio::io_context ioContext;
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type>
         work = boost::asio::make_work_guard(ioContext);
-    S2O::SenecDataAcquisitionCurl senec_cda(ioContext,
-                                            senec_update_time_opt.get());
+    // S2O::SenecDataAcquisitionCurl senec_cda(ioContext,
+    //                                         senec_update_time_opt.get());
+    S2O::SenecDataAcquisitionLibCurl senec_lcda(ioContext,
+                                                senec_update_time_opt.get());
     std::signal(SIGINT, ::SignalHandler);  // SIGINT 2
     std::signal(SIGTERM, ::SignalHandler); // SIGTERM 15
     ioContext.run();

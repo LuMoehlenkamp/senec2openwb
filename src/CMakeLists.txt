@@ -15,7 +15,7 @@ find_package(PahoMqttCpp REQUIRED)
 
 add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
 
-add_executable(${PROJECT_NAME_STR} main.cc configManager.cc senecDataAcquisitionCurl.cc mqttPublisher.cc integrator.cc)
+add_executable(${PROJECT_NAME_STR} main.cc configManager.cc senecDataAcquisitionLibCurl.cc mqttPublisher.cc integrator.cc)
 
 target_link_libraries(${PROJECT_NAME_STR} PUBLIC
                       ${Boost_LIBRARIES}
@@ -24,4 +24,5 @@ target_link_libraries(${PROJECT_NAME_STR} PUBLIC
                       ${LIBS_SYSTEM}
                       stdc++fs
                       ssl
-                      crypto)
+                      crypto
+                      curl)
