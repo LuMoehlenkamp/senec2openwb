@@ -4,7 +4,7 @@
 # takes the base alpine image and enhances it with the build time dependencies
 FROM alpine:3.19.0 AS build
 
-RUN apk update && apk add --no-cache build-base cmake boost1.82-dev=1.82.0-r3 mosquitto-dev git openssl-dev
+RUN apk update && apk add --no-cache build-base cmake boost1.82-dev=1.82.0-r3 mosquitto-dev git openssl-dev curl curl-dev
 
 WORKDIR /senec2openwb
 RUN git clone --recurse-submodules https://github.com/eclipse/paho.mqtt.cpp.git

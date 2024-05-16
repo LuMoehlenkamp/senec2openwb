@@ -17,7 +17,7 @@ class Conversion {
 public:
   static float ConvertToFloat(const std::string &inString) {
     split_vector_type SplitVec;
-    uint x;
+    unsigned x;
     std::stringstream ss;
 
     boost::split(SplitVec, inString, boost::is_any_of("_"),
@@ -37,7 +37,7 @@ public:
     std::stringstream ss;
     ConversionResult return_val;
     ss << std::hex << SplitVec[SplitVec.size() - 1];
-    ulong value;
+    unsigned long value;
     ss >> value;
     if (SplitVec[0] == "fl") {
       return_val = reinterpret_cast<float &>(value);
@@ -46,7 +46,7 @@ public:
       if (value > static_cast<unsigned long long>(UINT_MAX)) {
         throw std::out_of_range("Unsigned value overflows uint");
       }
-      return_val = static_cast<uint>(value);
+      return_val = static_cast<unsigned>(value);
       return return_val;
     } else if (SplitVec[0] == "i3") {
       if (value > static_cast<unsigned long long>(INT_MAX)) {
@@ -83,7 +83,7 @@ public:
         if (value > static_cast<unsigned long long>(UINT_MAX)) {
           throw std::out_of_range("Unsigned value overflows uint");
         }
-        outString = std::to_string(static_cast<uint>(value));
+        outString = std::to_string(static_cast<unsigned>(value));
       } else if (SplitVec[0] == "i3") {
         if (value > static_cast<unsigned long long>(INT_MAX)) {
           throw std::out_of_range("Unsigned value overflows int");

@@ -61,7 +61,7 @@ void SenecDataAcquisitionCurl::Acquire()
       std::chrono::minutes offset_minutes(utc_offset);
       std::chrono::seconds offset_seconds(offset_minutes);
 
-      auto timestamp = boost::get<uint>(time_cr.get());
+      auto timestamp = boost::get<unsigned>(time_cr.get());
       std::time_t time_s_epoch = static_cast<std::time_t>(timestamp);
       std::stringstream ss;
       ss << std::put_time(std::localtime(&time_s_epoch), "%F %T.\n");
