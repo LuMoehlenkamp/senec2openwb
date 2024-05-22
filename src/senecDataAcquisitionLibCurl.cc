@@ -91,18 +91,18 @@ void SenecDataAcquisitionLibCurl::ProcessData() {
     std::string time = mTree.get<std::string>("RTC.WEB_TIME");
     ConversionResultOpt time_cr = Conversion::Convert(time);
 
-    if (time_cr.is_initialized() && utc_offset_cr.is_initialized())
-    {
-      auto utc_offset = boost::get<int>(utc_offset_cr.get());
-      std::chrono::minutes offset_minutes(utc_offset);
-      std::chrono::seconds offset_seconds(offset_minutes);
+    // if (time_cr.is_initialized() && utc_offset_cr.is_initialized())
+    // {
+    //   auto utc_offset = boost::get<int>(utc_offset_cr.get());
+    //   std::chrono::minutes offset_minutes(utc_offset);
+    //   std::chrono::seconds offset_seconds(offset_minutes);
 
-      auto timestamp = boost::get<unsigned>(time_cr.get());
-      std::time_t time_s_epoch = static_cast<std::time_t>(timestamp);
-      std::stringstream ss;
-      ss << std::put_time(std::localtime(&time_s_epoch), "%F %T.\n");
-      mPublisher.publishTime(ss.str()); // todo: refactor this method
-    }
+      // auto timestamp = boost::get<unsigned>(time_cr.get());
+      // std::time_t time_s_epoch = static_cast<std::time_t>(timestamp);
+      // std::stringstream ss;
+      // ss << std::put_time(std::localtime(&time_s_epoch), "%F %T.\n");
+      // mPublisher.publishTime(ss.str()); // todo: refactor this method
+    // }
 
     // openWB/set/pv/1/W PV-Erzeugungsleistung in Watt, int, positiv
     const std::string topic_inv_power_str("openWB/set/pv/1/W");
