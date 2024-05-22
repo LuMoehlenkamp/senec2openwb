@@ -2,7 +2,7 @@
 
 using namespace S2O;
 
-const int QOS(1);
+const int QOS(0);
 const auto TIMEOUT = std::chrono::seconds(10);
 
 const std::string TOPIC{"hello"};
