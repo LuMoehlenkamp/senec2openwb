@@ -97,11 +97,11 @@ void SenecDataAcquisitionLibCurl::ProcessData() {
     //   std::chrono::minutes offset_minutes(utc_offset);
     //   std::chrono::seconds offset_seconds(offset_minutes);
 
-      // auto timestamp = boost::get<unsigned>(time_cr.get());
-      // std::time_t time_s_epoch = static_cast<std::time_t>(timestamp);
-      // std::stringstream ss;
-      // ss << std::put_time(std::localtime(&time_s_epoch), "%F %T.\n");
-      // mPublisher.publishTime(ss.str()); // todo: refactor this method
+    // auto timestamp = boost::get<unsigned>(time_cr.get());
+    // std::time_t time_s_epoch = static_cast<std::time_t>(timestamp);
+    // std::stringstream ss;
+    // ss << std::put_time(std::localtime(&time_s_epoch), "%F %T.\n");
+    // mPublisher.publishTime(ss.str()); // todo: refactor this method
     // }
 
     // openWB/set/pv/1/W PV-Erzeugungsleistung in Watt, int, positiv
@@ -227,7 +227,11 @@ void SenecDataAcquisitionLibCurl::ProcessData() {
     Conversion::ConvertToString(bat_soc_raw_str, bat_soc_pub_str);
     mPublisher.publishStr(topic_bat_soc_str, bat_soc_pub_str);
 
-  } catch (const std::exception &e) {
+  }
+  catch (const std::exception &e) {
     std::cerr << e.what() << '\n';
+  }
+  catch (...) {
+    std::cerr << "unknown exception caught" << '\n';
   }
 }
