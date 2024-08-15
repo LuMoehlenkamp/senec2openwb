@@ -46,6 +46,9 @@ void SenecDataAcquisitionLibCurl::Acquire() {
   } catch (const std::exception &e) {
     std::cerr << e.what() << '\n';
   }
+  catch (...) {
+    std::cerr << "unknown exception caught" << '\n';
+  }
 
   if (res == CURLE_OK) {
     ParseResponse(response);
@@ -58,8 +61,14 @@ void SenecDataAcquisitionLibCurl::Acquire() {
   ProcessData();
 
   // std::cout << '\t' << "-> " << res << '\n';
-
-  curl_easy_cleanup(mCurl);
+  try {
+    curl_easy_cleanup(mCurl);
+  } catch (const std::exception &e) {
+    std::cerr << e.what() << '\n';
+  }
+  catch (...) {
+    std::cerr << "unknown exception caught" << '\n';
+  }
   setTimerDuration();
   return;
 }
