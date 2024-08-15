@@ -1,4 +1,3 @@
-version: '3'
 services:
   senec2openwb:
     image: ludgerm/senec2openwb

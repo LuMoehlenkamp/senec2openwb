@@ -11,7 +11,7 @@ RUN git clone --recurse-submodules https://github.com/eclipse/paho.mqtt.cpp.git
 
 WORKDIR /senec2openwb/paho.mqtt.cpp
 # ToDo: try avoiding this specific checkout
-RUN git checkout ef021805c7aca42d72194d85bb2bdccdfe963e28
+# RUN git checkout ef021805c7aca42d72194d85bb2bdccdfe963e28
 RUN cmake -Bbuild -H. -DPAHO_WITH_MQTT_C=ON -DPAHO_BUILD_STATIC=ON -DPAHO_BUILD_DOCUMENTATION=OFF -DPAHO_BUILD_SAMPLES=OFF
 RUN cmake --build build/ --target install
 RUN ldconfig /etc/ld.so.conf.d
