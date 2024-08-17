@@ -2,5 +2,6 @@
   "testMode": true,
   "senecUpdateTime_sec": "5",
   "openWb_ip": "192.168.178.20",
-  "openWb_port": "1883"
+  "openWb_port": "1883",
+  "senecTimeout_ms": "4000"
 }

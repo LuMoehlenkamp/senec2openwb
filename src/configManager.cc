@@ -5,12 +5,17 @@ using namespace S2O;
 const std::string ConfigManager::CONFIG_PATH = "./dat/params.json";
 
 ConfigManager *ConfigManager::mpConfigManager = nullptr;
-
+// clang-format off
 ConfigManager::ConfigManager(const std::string &arFilePathAndName)
-    : mConfigLoaded(false), mFilePathAndName(arFilePathAndName),
-      mTestMode(DEFAULT_TESTMODE), mSenecUpdateTime(DEFAULT_SENEC_UPDATE_TIME),
-      mOpenWbIp(DEFAULT_MQTT_BROKER_IP), mOpenWbPort(DEFAULT_MQTT_BROKER_PORT) {
+    : mConfigLoaded(false)
+    , mFilePathAndName(arFilePathAndName)
+    , mTestMode(DEFAULT_TESTMODE)
+    , mSenecUpdateTime(DEFAULT_SENEC_UPDATE_TIME)
+    , mOpenWbIp(DEFAULT_MQTT_BROKER_IP)
+    , mOpenWbPort(DEFAULT_MQTT_BROKER_PORT)
+    , mSenecTimeoutTime(DEFAULT_SENEC_TIMEOUT_MS) {
 }
+// clang-format on
 
 ConfigManager *ConfigManager::GetInstance(const std::string arFilePathAndName) {
   if (mpConfigManager == nullptr)
@@ -46,6 +51,13 @@ boost::optional<unsigned> ConfigManager::GetOpenWbPort() {
   return boost::none;
 }
 
+boost::optional<long> ConfigManager::GetSenecTimeoutTime() {
+  EnsureConfigLoaded();
+  if (mConfigLoaded)
+    return mSenecTimeoutTime;
+  return boost::none;
+}
+
 bool ConfigManager::LoadConfig() {
   try {
     boost::property_tree::ptree tree;
@@ -55,6 +67,7 @@ bool ConfigManager::LoadConfig() {
         tree.get(SENEC_UPDATE_TIME_NAME, DEFAULT_SENEC_UPDATE_TIME);
     mOpenWbIp = tree.get(MQTT_BROKER_IP_NAME, DEFAULT_MQTT_BROKER_IP);
     mOpenWbPort = tree.get(MQTT_BROKER_PORT_NAME, DEFAULT_MQTT_BROKER_PORT);
+    mSenecTimeoutTime = tree.get(SENEC_TIMEOUT_NAME, DEFAULT_SENEC_TIMEOUT_MS);
   } catch (const boost::property_tree::json_parser_error &pt_e) {
     std::cerr << pt_e.what() << '\n';
     return false;
@@ -77,6 +90,7 @@ void ConfigManager::ResetToDefaults() {
   mSenecUpdateTime = DEFAULT_SENEC_UPDATE_TIME;
   mOpenWbIp = DEFAULT_MQTT_BROKER_IP;
   mOpenWbPort = DEFAULT_MQTT_BROKER_PORT;
+  mSenecTimeoutTime = DEFAULT_SENEC_TIMEOUT_MS;
   mpConfigManager = nullptr;
 }
 
