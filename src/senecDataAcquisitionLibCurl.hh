@@ -16,6 +16,7 @@ private:
   CURL *mCurl;
   boost::asio::io_context &mrIoContext;
   unsigned mTimerDuration;
+  long mTimeoutDuration_ms;
   boost::asio::steady_timer mTimer;
   ptree mTree;
   std::string mUrl{"https://192.168.178.40/lala.cgi"};
@@ -39,7 +40,7 @@ private:
 
 public:
   SenecDataAcquisitionLibCurl(boost::asio::io_context &ioContext,
-                              unsigned TimerDuration);
+                              unsigned TimerDuration, long TimeoutDuration_ms);
   ~SenecDataAcquisitionLibCurl();
   SenecDataAcquisitionLibCurl(SenecDataAcquisitionLibCurl &&) = delete;
   SenecDataAcquisitionLibCurl(const SenecDataAcquisitionLibCurl &) = delete;

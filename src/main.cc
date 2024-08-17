@@ -13,7 +13,7 @@ volatile std::sig_atomic_t gSignalStatus;
 
 void SignalHandler(int signal) {
   gSignalStatus = signal;
-  std::cout << '\n' << "received " << gSignalStatus << '\n';
+  std::cout << '\n' << "Received signal: " << gSignalStatus << '\n';
   exit(1);
 }
 
@@ -21,14 +21,21 @@ int main(int argc, char *argv[]) {
   S2O::ConfigManager *p_config_manager(
       S2O::ConfigManager::GetInstance(S2O::ConfigManager::CONFIG_PATH));
   auto senec_update_time_opt = p_config_manager->GetSenecUpdateTime();
+  auto senec_timeout_time_opt = p_config_manager->GetSenecTimeoutTime();
+  if (!senec_update_time_opt.is_initialized() ||
+      !senec_timeout_time_opt.is_initialized()) {
+    std::cerr << "incomplete configuration. GoodBye!"
+              << "\n";
+    return -1;
+  }
   try {
     boost::asio::io_context ioContext;
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type>
         work = boost::asio::make_work_guard(ioContext);
     // S2O::SenecDataAcquisitionCurl senec_cda(ioContext,
     //                                         senec_update_time_opt.get());
-    S2O::SenecDataAcquisitionLibCurl senec_lcda(ioContext,
-                                                senec_update_time_opt.get());
+    S2O::SenecDataAcquisitionLibCurl senec_lcda(
+        ioContext, senec_update_time_opt.get(), senec_timeout_time_opt.get());
     std::signal(SIGINT, ::SignalHandler);  // SIGINT 2
     std::signal(SIGTERM, ::SignalHandler); // SIGTERM 15
     ioContext.run();

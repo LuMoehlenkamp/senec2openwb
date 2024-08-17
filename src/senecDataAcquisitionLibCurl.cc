@@ -8,8 +8,10 @@ using namespace S2O;
 
 // clang-format off
 SenecDataAcquisitionLibCurl::SenecDataAcquisitionLibCurl(
-    boost::asio::io_context &ioContext, unsigned TimerDuration)
-    : mrIoContext(ioContext), mTimerDuration(TimerDuration)
+    boost::asio::io_context &ioContext, unsigned TimerDuration, long TimeoutDuration_ms)
+    : mrIoContext(ioContext)
+    , mTimerDuration(TimerDuration)
+    , mTimeoutDuration_ms(TimeoutDuration_ms)
     , mTimer(ioContext, std::chrono::seconds(INITIAL_TIMER_DURATION))
     , mPublisher() {
   Init();
@@ -21,7 +23,9 @@ SenecDataAcquisitionLibCurl::~SenecDataAcquisitionLibCurl() {
     curl_easy_cleanup(mCurl);
 }
 
-void SenecDataAcquisitionLibCurl::Init() { curl_global_init(CURL_GLOBAL_SSL); }
+void SenecDataAcquisitionLibCurl::Init() {
+  curl_global_init(CURL_GLOBAL_SSL);
+}
 
 void SenecDataAcquisitionLibCurl::Acquire() {
   mCurl = curl_easy_init();
@@ -40,6 +44,7 @@ void SenecDataAcquisitionLibCurl::Acquire() {
   curl_easy_setopt(mCurl, CURLOPT_SSL_VERIFYPEER, false);
   curl_easy_setopt(mCurl, CURLOPT_WRITEFUNCTION, WriteCallback);
   curl_easy_setopt(mCurl, CURLOPT_WRITEDATA, &response);
+  curl_easy_setopt(mCurl, CURLOPT_TIMEOUT_MS, mTimeoutDuration_ms);
 
   try {
     res = curl_easy_perform(mCurl);
