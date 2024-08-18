@@ -13,7 +13,8 @@ ConfigManager::ConfigManager(const std::string &arFilePathAndName)
     , mSenecUpdateTime(DEFAULT_SENEC_UPDATE_TIME)
     , mOpenWbIp(DEFAULT_MQTT_BROKER_IP)
     , mOpenWbPort(DEFAULT_MQTT_BROKER_PORT)
-    , mSenecTimeoutTime(DEFAULT_SENEC_TIMEOUT_MS) {
+    , mSenecTimeoutTime(DEFAULT_SENEC_TIMEOUT_MS)
+    , mSenecConnectTimeoutTime(DEFAULT_SENEC_CONNECT_TIMEOUT_MS) {
 }
 // clang-format on
 
@@ -58,6 +59,13 @@ boost::optional<long> ConfigManager::GetSenecTimeoutTime() {
   return boost::none;
 }
 
+boost::optional<long> ConfigManager::GetSenecConnectTimeoutTime() {
+  EnsureConfigLoaded();
+  if (mConfigLoaded)
+    return mSenecConnectTimeoutTime;
+  return boost::none;
+}
+
 bool ConfigManager::LoadConfig() {
   try {
     boost::property_tree::ptree tree;
@@ -68,6 +76,8 @@ bool ConfigManager::LoadConfig() {
     mOpenWbIp = tree.get(MQTT_BROKER_IP_NAME, DEFAULT_MQTT_BROKER_IP);
     mOpenWbPort = tree.get(MQTT_BROKER_PORT_NAME, DEFAULT_MQTT_BROKER_PORT);
     mSenecTimeoutTime = tree.get(SENEC_TIMEOUT_NAME, DEFAULT_SENEC_TIMEOUT_MS);
+    mSenecConnectTimeoutTime =
+        tree.get(SENEC_CONNECT_TIMEOUT_NAME, DEFAULT_SENEC_TIMEOUT_MS);
   } catch (const boost::property_tree::json_parser_error &pt_e) {
     std::cerr << pt_e.what() << '\n';
     return false;
@@ -91,6 +101,7 @@ void ConfigManager::ResetToDefaults() {
   mOpenWbIp = DEFAULT_MQTT_BROKER_IP;
   mOpenWbPort = DEFAULT_MQTT_BROKER_PORT;
   mSenecTimeoutTime = DEFAULT_SENEC_TIMEOUT_MS;
+  mSenecConnectTimeoutTime = DEFAULT_SENEC_CONNECT_TIMEOUT_MS;
   mpConfigManager = nullptr;
 }
 

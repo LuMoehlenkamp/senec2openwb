@@ -8,10 +8,11 @@ using namespace S2O;
 
 // clang-format off
 SenecDataAcquisitionLibCurl::SenecDataAcquisitionLibCurl(
-    boost::asio::io_context &ioContext, unsigned TimerDuration, long TimeoutDuration_ms)
+    boost::asio::io_context &ioContext, unsigned TimerDuration, long TimeoutDuration_ms, long ConnectTimeoutDuration_ms)
     : mrIoContext(ioContext)
     , mTimerDuration(TimerDuration)
     , mTimeoutDuration_ms(TimeoutDuration_ms)
+    , mConnectTimeoutDuration_ms(ConnectTimeoutDuration_ms)
     , mTimer(ioContext, std::chrono::seconds(INITIAL_TIMER_DURATION))
     , mPublisher() {
   Init();
@@ -45,7 +46,7 @@ void SenecDataAcquisitionLibCurl::Acquire() {
   curl_easy_setopt(mCurl, CURLOPT_WRITEFUNCTION, WriteCallback);
   curl_easy_setopt(mCurl, CURLOPT_WRITEDATA, &response);
   curl_easy_setopt(mCurl, CURLOPT_TIMEOUT_MS, mTimeoutDuration_ms);
-
+  curl_easy_setopt(mCurl, CURLOPT_CONNECTTIMEOUT_MS, mConnectTimeoutDuration_ms);
   try {
     res = curl_easy_perform(mCurl);
   } catch (const std::exception &e) {
