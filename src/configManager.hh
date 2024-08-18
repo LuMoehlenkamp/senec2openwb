@@ -20,12 +20,14 @@ private:
   const std::string DEFAULT_MQTT_BROKER_IP = "192.168.178.20";
   const unsigned DEFAULT_MQTT_BROKER_PORT = 1883U;
   const long DEFAULT_SENEC_TIMEOUT_MS = 3000L;
+  const long DEFAULT_SENEC_CONNECT_TIMEOUT_MS = 1500L;
 
   const std::string TEST_MODE_NAME = "testMode";
   const std::string SENEC_UPDATE_TIME_NAME = "senecUpdateTime_sec";
   const std::string MQTT_BROKER_IP_NAME = "openWb_ip";
   const std::string MQTT_BROKER_PORT_NAME = "openWb_port";
   const std::string SENEC_TIMEOUT_NAME = "senecTimeout_ms";
+  const std::string SENEC_CONNECT_TIMEOUT_NAME = "senecConnectTimeout_ms";
 
 protected:
   ConfigManager(const std::string &arFilePathAndName);
@@ -45,6 +47,7 @@ public:
   boost::optional<std::string> GetOpenWbIp();
   boost::optional<unsigned> GetOpenWbPort();
   boost::optional<long> GetSenecTimeoutTime();
+  boost::optional<long> GetSenecConnectTimeoutTime();
 
   bool LoadConfig();
   void ResetToDefaults();
@@ -57,6 +60,7 @@ private:
   std::string mOpenWbIp;
   unsigned mOpenWbPort;
   long mSenecTimeoutTime;
+  long mSenecConnectTimeoutTime;
 
   void EnsureConfigLoaded();
 };
