@@ -59,14 +59,11 @@ void SenecDataAcquisitionLibCurl::Acquire() {
   if (res == CURLE_OK) {
     ParseResponse(response);
     if (mTree.empty()) {
-      // std::cout << "parsing was unsuccessful" << '\n';
       return;
     }
+    ProcessData();
   }
 
-  ProcessData();
-
-  // std::cout << '\t' << "-> " << res << '\n';
   try {
     curl_easy_cleanup(mCurl);
   } catch (const std::exception &e) {
@@ -95,7 +92,19 @@ size_t SenecDataAcquisitionLibCurl::WriteCallback(void *contents, size_t size,
 void SenecDataAcquisitionLibCurl::ParseResponse(const std::string &response) {
   mTree.clear();
   std::istringstream json_stream(response);
-  boost::property_tree::read_json(json_stream, mTree);
+  try {
+    boost::property_tree::read_json(json_stream, mTree);
+  }
+  catch(const boost::property_tree::json_parser_error& e) {
+    std::cerr << "Exception: " << e.filename() << ": " << e.message() << '\n';
+  }
+  catch (const std::exception& e) {
+    std::cerr << "Exception: " << e.what() << '\n';
+  }
+  catch (...) {
+    std::cerr << "Exception of unknown type" << '\n';
+  }
+
 }
 
 void SenecDataAcquisitionLibCurl::ProcessData() {
