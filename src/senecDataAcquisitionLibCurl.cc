@@ -51,13 +51,30 @@ void SenecDataAcquisitionLibCurl::Acquire() {
     res = curl_easy_perform(mCurl);
   } catch (const std::exception &e) {
     std::cerr << e.what() << '\n';
+    return;
   }
   catch (...) {
     std::cerr << "unknown exception caught" << '\n';
+    return;
   }
 
   if (res == CURLE_OK) {
-    ParseResponse(response);
+    try {
+      ParseResponse(response);
+    }
+    catch(const boost::property_tree::json_parser_error& e) {
+      std::cerr << "Exception: " << e.filename() << ": " << e.message() << '\n';
+      return;
+    }
+    catch (const std::exception& e) {
+      std::cerr << "Exception: " << e.what() << '\n';
+      return;
+    }
+    catch (...) {
+      std::cerr << "Exception of unknown type" << '\n';
+      return;
+    }
+
     if (mTree.empty()) {
       return;
     }
@@ -84,7 +101,6 @@ void SenecDataAcquisitionLibCurl::setTimerDuration() {
 size_t SenecDataAcquisitionLibCurl::WriteCallback(void *contents, size_t size,
                                                   size_t nmemb,
                                                   std::string *buffer) {
-  // std::cout << "Write-cb called" << '\n';
   buffer->append((char *)contents, size * nmemb);
   return size * nmemb;
 }
@@ -92,19 +108,7 @@ size_t SenecDataAcquisitionLibCurl::WriteCallback(void *contents, size_t size,
 void SenecDataAcquisitionLibCurl::ParseResponse(const std::string &response) {
   mTree.clear();
   std::istringstream json_stream(response);
-  try {
-    boost::property_tree::read_json(json_stream, mTree);
-  }
-  catch(const boost::property_tree::json_parser_error& e) {
-    std::cerr << "Exception: " << e.filename() << ": " << e.message() << '\n';
-  }
-  catch (const std::exception& e) {
-    std::cerr << "Exception: " << e.what() << '\n';
-  }
-  catch (...) {
-    std::cerr << "Exception of unknown type" << '\n';
-  }
-
+  boost::property_tree::read_json(json_stream, mTree);
 }
 
 void SenecDataAcquisitionLibCurl::ProcessData() {
