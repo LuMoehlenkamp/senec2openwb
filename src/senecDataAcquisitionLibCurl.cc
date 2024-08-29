@@ -29,10 +29,10 @@ void SenecDataAcquisitionLibCurl::Init() {
 }
 
 void SenecDataAcquisitionLibCurl::Acquire() {
+  setTimerDuration();
   mCurl = curl_easy_init();
   if (!mCurl) {
-    // std::cout << "Curl not initialized" << '\n';
-    setTimerDuration();
+    std::cerr << "Curl not initialized" << '\n';
     return;
   }
   // std::cout << "attempting to acquire data" << '\n';
@@ -63,15 +63,15 @@ void SenecDataAcquisitionLibCurl::Acquire() {
       ParseResponse(response);
     }
     catch(const boost::property_tree::json_parser_error& e) {
-      std::cerr << "Exception: " << e.filename() << ": " << e.message() << '\n';
+      std::cerr << "JSON parser exception while trying to parse response: " << e.filename() << ": " << e.message() << '\n';
       return;
     }
     catch (const std::exception& e) {
-      std::cerr << "Exception: " << e.what() << '\n';
+      std::cerr << "std::exception exception while trying to parse response: " << e.what() << '\n';
       return;
     }
     catch (...) {
-      std::cerr << "Exception of unknown type" << '\n';
+      std::cerr << "exception of unknown type while trying to parse response" << '\n';
       return;
     }
 
@@ -89,7 +89,6 @@ void SenecDataAcquisitionLibCurl::Acquire() {
   catch (...) {
     std::cerr << "unknown exception caught" << '\n';
   }
-  setTimerDuration();
   return;
 }
 
@@ -257,9 +256,9 @@ void SenecDataAcquisitionLibCurl::ProcessData() {
 
   }
   catch (const std::exception &e) {
-    std::cerr << e.what() << '\n';
+    std::cerr << "std::exception while processing data: " << e.what() << '\n';
   }
   catch (...) {
-    std::cerr << "unknown exception caught" << '\n';
+    std::cerr << "unknown exception caught while processing data." << '\n';
   }
 }
