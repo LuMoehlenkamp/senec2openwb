@@ -10,11 +10,13 @@ using namespace S2O;
 
 const int Integrator::DECIMALS = 1;
 
+Integrator::Integrator() : integrated_value(0.0f) {}
+
 void Integrator::Integrate(const float &value) {
   time_now_opt = std::chrono::system_clock::now();
   if (time_now_opt.is_initialized()) {
-    if (DayChangeOccured(time_now_opt.get()))
-      Reset();
+    // if (DayChangeOccured(time_now_opt.get()))
+    //   Reset();
     if (time_last_opt.is_initialized()) {
       auto delta = time_now_opt.get() - time_last_opt.get();
       constexpr auto ref(

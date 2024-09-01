@@ -10,7 +10,7 @@ class Integrator {
   static const int DECIMALS;
 
 public:
-  Integrator() = default;
+  Integrator();
   void Integrate(const float &value);
   bool DayChangeOccured(
       const std::chrono::time_point<std::chrono::system_clock> &time_now);

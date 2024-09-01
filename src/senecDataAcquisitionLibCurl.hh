@@ -20,10 +20,53 @@ private:
   long mConnectTimeoutDuration_ms;
   boost::asio::steady_timer mTimer;
   ptree mTree;
-  std::string mUrl{"https://192.168.178.40/lala.cgi"};
-  std::string mPostData{"{\" ENERGY \":{},\" PM1OBJ1 "
-                        "\":{},\" PM1OBJ2 \":{},\" RTC "
-                        "\":{}}"};
+
+  const std::string mUrl{"https://192.168.178.40/lala.cgi"};
+  const std::string mPostData{"{\" ENERGY \":{},\" PM1OBJ1 "
+                              "\":{},\" PM1OBJ2 \":{},\" RTC "
+                              "\":{}}"};
+
+  const std::string mTreeElemRtcOffset{"RTC.UTC_OFFSET"};
+  const std::string mTreeElemWebTime{"RTC.WEB_TIME"};
+
+  const std::string mTreeElemInvPower{"ENERGY.GUI_INVERTER_POWER"};
+  const std::string mTopicInvPower{"openWB/set/pv/1/W"};
+
+  const std::string mTopicInvEnergy{"openWB/set/pv/1/WhCounter"};
+
+  const std::string mTreeElemGridPower{"ENERGY.GUI_GRID_POW"};
+  const std::string mTopicGridPower{"openWB/set/evu/W"};
+  const std::string mTopicGridImportedEnergy{"openWB/set/evu/WhImported"};
+  const std::string mTopicGridExportedEnergy{"openWB/set/evu/WhExported"};
+
+  const std::string mTreeElemFreq{"PM1OBJ1.FREQ"};
+  const std::string mTopicFrequency{"openWB/set/evu/HzFrequenz"};
+
+  const std::string mTreeElemGridPowers{"PM1OBJ1.P_AC"};
+  std::vector<std::string> mTopicGridPowersVec{"openWB/set/evu/WPhase1",
+                                               "openWB/set/evu/WPhase2",
+                                               "openWB/set/evu/WPhase3"};
+
+  const std::string mTreeElemVoltages{"PM1OBJ1.U_AC"};
+  std::vector<std::string> mTopicGridVoltagesVec{"openWB/set/evu/VPhase1",
+                                                 "openWB/set/evu/VPhase2",
+                                                 "openWB/set/evu/VPhase3"};
+
+  const std::string mTreeElemCurrents{"PM1OBJ1.I_AC"};
+  std::vector<std::string> mTopicGridCurrentsVec{"openWB/set/evu/APhase1",
+                                                 "openWB/set/evu/APhase2",
+                                                 "openWB/set/evu/APhase3"};
+
+  const std::string mTreeElemBatteryPower{"ENERGY.GUI_BAT_DATA_POWER"};
+  const std::string mTopicBatteryPower{"openWB/set/houseBattery/W"};
+  const std::string mTopicBatteryImportedEnergy{
+      "openWB/set/houseBattery/WhImported"};
+  const std::string mTopicBatteryExportedEnergy{
+      "openWB/set/houseBattery/WhExported"};
+
+  const std::string mTopicBatterySoc{"openWB/set/houseBattery/%Soc"};
+  const std::string mTreeElemBatterySoc{"ENERGY.GUI_BAT_DATA_FUEL_CHARGE"};
+
   mqttPublisher mPublisher;
   Integrator mInverterExportedEnergy;
   Integrator mGridImportedEnergy;
