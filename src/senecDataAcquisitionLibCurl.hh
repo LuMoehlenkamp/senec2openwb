@@ -81,6 +81,10 @@ private:
                               std::string *buffer);
   void ParseResponse(const std::string &response);
   void ProcessData();
+  void ProcessTimeInformation();
+  void ProcessInverterData();
+  void ProcessGridData();
+  void ProcessBatteryData();
 
 public:
   SenecDataAcquisitionLibCurl(boost::asio::io_context &ioContext,
@@ -90,7 +94,5 @@ public:
   SenecDataAcquisitionLibCurl(SenecDataAcquisitionLibCurl &&) = delete;
   SenecDataAcquisitionLibCurl(const SenecDataAcquisitionLibCurl &) = delete;
 };
-
-// ToDo: move implementation to cc file
 
 } // namespace S2O

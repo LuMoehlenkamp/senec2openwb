@@ -112,6 +112,21 @@ void SenecDataAcquisitionLibCurl::ParseResponse(const std::string &response) {
 
 void SenecDataAcquisitionLibCurl::ProcessData() {
   try {
+    ProcessTimeInformation();
+    ProcessInverterData();
+    ProcessGridData();
+    ProcessBatteryData();
+  }
+  catch (const std::exception &e) {
+    std::cerr << "std::exception while processing data: " << e.what() << '\n';
+  }
+  catch (...) {
+    std::cerr << "unknown exception caught while processing data." << '\n';
+  }
+}
+
+void S2O::SenecDataAcquisitionLibCurl::ProcessTimeInformation()
+{
     std::string utc_offset = mTree.get<std::string>(mTreeElemRtcOffset);
     ConversionResultOpt utc_offset_cr = Conversion::Convert(utc_offset);
 
@@ -130,9 +145,11 @@ void SenecDataAcquisitionLibCurl::ProcessData() {
     // ss << std::put_time(std::localtime(&time_s_epoch), "%F %T.\n");
     // mPublisher.publishTime(ss.str()); // todo: refactor this method
     // }
+}
 
+void S2O::SenecDataAcquisitionLibCurl::ProcessInverterData()
+{
     // openWB/set/pv/1/W PV-Erzeugungsleistung in Watt, int, positiv
-
     std::string inv_power_raw_str = mTree.get<std::string>(mTreeElemInvPower);
     std::string inv_power_pub_str;
     Conversion::ConvertToString(inv_power_raw_str, inv_power_pub_str, false, false);
@@ -142,8 +159,11 @@ void SenecDataAcquisitionLibCurl::ProcessData() {
     float inverter_power(std::stof(inv_power_pub_str));
     mInverterExportedEnergy.Integrate(std::abs(inverter_power));
     mPublisher.publishStr(mTopicInvEnergy, mInverterExportedEnergy.getIntegratedValueAsStr());
+}
 
-    // openWB/set/evu/W Bezugsleistung in Watt, int, positiv Bezug, negativ Einspeisung float->int
+void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
+{
+  // openWB/set/evu/W Bezugsleistung in Watt, int, positiv Bezug, negativ Einspeisung float->int
     std::string grid_power_raw_str = mTree.get<std::string>(mTreeElemGridPower);
     std::string grid_power_pub_str;
     Conversion::ConvertToString(grid_power_raw_str, grid_power_pub_str);
@@ -163,47 +183,58 @@ void SenecDataAcquisitionLibCurl::ProcessData() {
     mPublisher.publishStr(mTopicFrequency, frequency_pub_str);
 
     // openWB/set/evu/WPhase1 (2,3) Leistung in Watt für Phase 1 (2,3), float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
-    // std::vector<std::string> powers_raw_str_vec;
-    // for (boost::property_tree::ptree::value_type &power : mTree.get_child(mTreeElemGridPowers))
-    // {
-    //   powers_raw_str_vec.push_back(power.second.data());
-    // }
-    // for (auto topics_it = mTopicGridPowersVec.begin(), raw_it = powers_raw_str_vec.begin(), pub_it = mTopicGridPowersVec.begin();
-    //      raw_it != powers_raw_str_vec.end();
-    //      ++topics_it, ++raw_it, ++pub_it)
-    // {
-    //   Conversion::ConvertToString(*raw_it, *pub_it, false, true);
-    //   mPublisher.publishStr(*topics_it, *pub_it);
-    // }
+    std::vector<std::string> powers_raw_str_vec;
+    std::vector<float> powers_fl_vec;
+    for (boost::property_tree::ptree::value_type &power : mTree.get_child(mTreeElemGridPowers))
+    {
+      powers_raw_str_vec.push_back(power.second.data());
+    }
+    for (auto topics_it = mTopicGridPowersVec.begin(), raw_it = powers_raw_str_vec.begin();
+         raw_it != powers_raw_str_vec.end();
+         ++topics_it, ++raw_it)
+    {
+      std::string power_pub_str;
+      Conversion::ConvertToString(*raw_it, power_pub_str, false, true);
+      powers_fl_vec.push_back(std::stof(power_pub_str));
+      mPublisher.publishStr(*topics_it, power_pub_str);
+    }
 
     // openWB/set/evu/VPhase1 (2,3) Spannung in Volt für Phase 1 (2,3), float, Punkt als Trenner
-    // std::vector<std::string> volts_raw_str_vec;
-    // for (boost::property_tree::ptree::value_type &voltage : mTree.get_child(mTreeElemVoltages)) // fl
-    // {
-    //   volts_raw_str_vec.push_back(voltage.second.data());
-    // }
-    // for (auto topics_it = mTopicGridVoltagesVec.begin(), raw_it = volts_raw_str_vec.begin(), pub_it = mTopicGridVoltagesVec.begin();
-    //      raw_it != volts_raw_str_vec.end();
-    //      ++topics_it, ++raw_it, ++pub_it)
-    // {
-    //   Conversion::ConvertToString(*raw_it, *pub_it, false, true);
-    //   mPublisher.publishStr(*topics_it, *pub_it);
-    // }
+    std::vector<std::string> volts_raw_str_vec;
+    for (boost::property_tree::ptree::value_type &voltage : mTree.get_child(mTreeElemVoltages)) // fl
+    {
+      volts_raw_str_vec.push_back(voltage.second.data());
+    }
+    for (auto topics_it = mTopicGridVoltagesVec.begin(), raw_it = volts_raw_str_vec.begin();
+         raw_it != volts_raw_str_vec.end();
+         ++topics_it, ++raw_it)
+    {
+      std::string voltage_pub_str;
+      Conversion::ConvertToString(*raw_it, voltage_pub_str, false, true);
+      mPublisher.publishStr(*topics_it, voltage_pub_str);
+    }
 
     // openWB/set/evu/APhase1 (2,3) Strom in Ampere für Phase 1 (2,3), float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
-    // std::vector<std::string> amps_raw_str_vec;
-    // for (boost::property_tree::ptree::value_type &current : mTree.get_child(mTreeElemCurrents)) // fl
-    // {
-    //   amps_raw_str_vec.push_back(current.second.data());
-    // }
-    // for (auto topics_it = mTopicGridCurrentsVec.begin(), raw_it = amps_raw_str_vec.begin(), pub_it = mTopicGridCurrentsVec.begin(), powers_it = mTopicGridPowersVec.begin();
-    //      raw_it != amps_raw_str_vec.end();
-    //      ++topics_it, ++raw_it, ++pub_it, ++powers_it)
-    // {
-    //   Conversion::ConvertToString(*raw_it, *pub_it, std::signbit(std::stof(*powers_it)), true);
-    //   mPublisher.publishStr(*topics_it, *pub_it);
-    // }
+    std::vector<std::string> amps_raw_str_vec;
+    for (boost::property_tree::ptree::value_type &current : mTree.get_child(mTreeElemCurrents)) // fl
+    {
+      amps_raw_str_vec.push_back(current.second.data());
+    }
+    auto topics_it = mTopicGridCurrentsVec.begin();
+    auto raw_it = amps_raw_str_vec.begin();
+    auto powers_it = powers_fl_vec.begin();
+    for ( ;
+         raw_it != amps_raw_str_vec.end();
+         ++topics_it, ++raw_it, ++powers_it)
+    {
+      std::string current_pub_str;
+      Conversion::ConvertToString(*raw_it, current_pub_str, std::signbit(*powers_it), true);
+      mPublisher.publishStr(*topics_it, current_pub_str);
+    }
+}
 
+void S2O::SenecDataAcquisitionLibCurl::ProcessBatteryData()
+{
     // std::string house_power = mTree.get<std::string>("ENERGY.GUI_HOUSE_POW"); // fl
 
     // openWB/set/houseBattery/W Speicherleistung in Watt, int, positiv Ladung, negativ Entladung   -> done
@@ -224,12 +255,4 @@ void SenecDataAcquisitionLibCurl::ProcessData() {
     std::string bat_soc_pub_str;
     Conversion::ConvertToString(bat_soc_raw_str, bat_soc_pub_str);
     mPublisher.publishStr(mTopicBatterySoc, bat_soc_pub_str);
-
-  }
-  catch (const std::exception &e) {
-    std::cerr << "std::exception while processing data: " << e.what() << '\n';
-  }
-  catch (...) {
-    std::cerr << "unknown exception caught while processing data." << '\n';
-  }
 }
