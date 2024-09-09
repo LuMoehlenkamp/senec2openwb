@@ -94,6 +94,19 @@ public:
       std::cerr << e.what() << '\n';
     }
   }
+
+  static void ConvertToFloatVal(const std::string &inString, float &outValue) {
+    float value(0.0f);
+    try {
+      value = std::stof(inString);
+    } catch (const std::invalid_argument &e) {
+      std::cerr << "Ungültiger String für die Konvertierung: " << e.what()
+                << std::endl;
+      outValue = 0.0f;
+      return;
+    }
+    outValue = value;
+  }
 };
 
 } // namespace S2O
