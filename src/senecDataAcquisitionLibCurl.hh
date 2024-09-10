@@ -17,7 +17,7 @@ class SenecDataAcquisitionLibCurl {
 private:
   CURL *mCurl;
   boost::asio::io_context &mrIoContext;
-  unsigned mTimerDuration;
+  unsigned mTimerDuration_ms;
   long mTimeoutDuration_ms;
   long mConnectTimeoutDuration_ms;
   boost::asio::steady_timer mTimer;

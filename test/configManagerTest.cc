@@ -34,7 +34,7 @@ BOOST_AUTO_TEST_CASE(
     GetInstance_ValidConfigPath_ReturnsValidPointerAndExpectedParameters) {
   std::cout << "starting config-manager-test" << '\n';
   bool expected_testmode(true);
-  unsigned expected_senec_update_time = 10;
+  unsigned expected_senec_update_time = 3000U;
   std::string expected_open_wb_ip = "192.168.178.20";
   unsigned expected_open_wb_port = 1883;
 

@@ -10,7 +10,7 @@ using namespace S2O;
 SenecDataAcquisitionLibCurl::SenecDataAcquisitionLibCurl(
     boost::asio::io_context &ioContext, unsigned TimerDuration, long TimeoutDuration_ms, long ConnectTimeoutDuration_ms)
     : mrIoContext(ioContext)
-    , mTimerDuration(TimerDuration)
+    , mTimerDuration_ms(TimerDuration)
     , mTimeoutDuration_ms(TimeoutDuration_ms)
     , mConnectTimeoutDuration_ms(ConnectTimeoutDuration_ms)
     , mTimer(ioContext, std::chrono::seconds(INITIAL_TIMER_DURATION))
@@ -93,7 +93,7 @@ void SenecDataAcquisitionLibCurl::Acquire() {
 }
 
 void SenecDataAcquisitionLibCurl::setTimerDuration() {
-  mTimer.expires_after(std::chrono::seconds(mTimerDuration));
+  mTimer.expires_after(std::chrono::milliseconds(mTimerDuration_ms));
   mTimer.async_wait(boost::bind(&SenecDataAcquisitionLibCurl::Acquire, this));
 }
 
