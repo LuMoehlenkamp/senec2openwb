@@ -16,14 +16,14 @@ namespace S2O {
 class ConfigManager {
 private:
   const bool DEFAULT_TESTMODE = true;
-  const unsigned DEFAULT_SENEC_UPDATE_TIME = 10U;
+  const unsigned DEFAULT_SENEC_UPDATE_TIME = 3000U;
   const std::string DEFAULT_MQTT_BROKER_IP = "192.168.178.20";
   const unsigned DEFAULT_MQTT_BROKER_PORT = 1883U;
   const long DEFAULT_SENEC_TIMEOUT_MS = 3000L;
   const long DEFAULT_SENEC_CONNECT_TIMEOUT_MS = 1500L;
 
   const std::string TEST_MODE_NAME = "testMode";
-  const std::string SENEC_UPDATE_TIME_NAME = "senecUpdateTime_sec";
+  const std::string SENEC_UPDATE_TIME_NAME = "senecUpdateTime_ms";
   const std::string MQTT_BROKER_IP_NAME = "openWb_ip";
   const std::string MQTT_BROKER_PORT_NAME = "openWb_port";
   const std::string SENEC_TIMEOUT_NAME = "senecTimeout_ms";
