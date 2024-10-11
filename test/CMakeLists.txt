@@ -4,8 +4,8 @@ set(PROJECT_UNIT_TESTS_NAME ${PROJECT_NAME_STR}_unit_tests)
 # Dependencies
 find_package(Boost REQUIRED COMPONENTS
                       filesystem
-                      log
-                      log_setup
+                      # log_setup
+                      # log
                       regex
                       serialization
                       thread
@@ -19,12 +19,14 @@ file(GLOB UNIT_TESTS_SRC_FILES ${PROJECT_SOURCE_DIR}/test/*.cc)
 
 # Include paths
 set(UNIT_TESTS_INCLUDES ${PROJECT_INCLUDE_DIR}
-        ${PROJECT_SOURCE_DIR}/src
-        ${Boost_INCLUDE_DIR})
+        ${PROJECT_SOURCE_DIR}/src)
+        # ${Boost_INCLUDE_DIR})
 
         # Assign the include directories
 include_directories(${Boost_INCLUDE_DIRS})
 include_directories(${UNIT_TESTS_INCLUDES})
+
+find_package(PahoMqttCpp REQUIRED)
 
 # --- build test executables ---
 add_definitions(-DBOOST_TEST_DYN_LINK)
@@ -37,9 +39,13 @@ add_executable(${PROJECT_UNIT_TESTS_NAME} ${UNIT_TESTS_SRC_FILES} ../src/configM
 
 target_link_libraries(${PROJECT_UNIT_TESTS_NAME}
                       ${Boost_LIBRARIES}
-                      ${WIRINGPI_LIBRARIES}
+                      ${Boost_LOG_LIBRARY}
+                      PahoMqttCpp::paho-mqttpp3-static
+                      stdc++
+                      stdc++fs
                       ssl
                       crypto
+                      curl
                       )
 enable_testing()
 add_test(MainTest ${PROJECT_UNIT_TESTS_NAME})
