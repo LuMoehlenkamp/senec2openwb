@@ -14,21 +14,25 @@ SenecDataAcquisitionLibCurl::SenecDataAcquisitionLibCurl(
     , mTimeoutDuration_ms(TimeoutDuration_ms)
     , mConnectTimeoutDuration_ms(ConnectTimeoutDuration_ms)
     , mTimer(ioContext, std::chrono::seconds(INITIAL_TIMER_DURATION))
-    , mPublisher() {
+    , mPublisher()
+{
   Init();
   mTimer.async_wait(boost::bind(&SenecDataAcquisitionLibCurl::Acquire, this));
 }
 
-SenecDataAcquisitionLibCurl::~SenecDataAcquisitionLibCurl() {
+SenecDataAcquisitionLibCurl::~SenecDataAcquisitionLibCurl()
+{
   if (mCurl)
     curl_easy_cleanup(mCurl);
 }
 
-void SenecDataAcquisitionLibCurl::Init() {
+void SenecDataAcquisitionLibCurl::Init()
+{
   curl_global_init(CURL_GLOBAL_SSL);
 }
 
-void SenecDataAcquisitionLibCurl::Acquire() {
+void SenecDataAcquisitionLibCurl::Acquire()
+{
   setTimerDuration();
   mCurl = curl_easy_init();
   if (!mCurl) {
@@ -92,25 +96,30 @@ void SenecDataAcquisitionLibCurl::Acquire() {
   return;
 }
 
-void SenecDataAcquisitionLibCurl::setTimerDuration() {
+void SenecDataAcquisitionLibCurl::setTimerDuration()
+{
   mTimer.expires_after(std::chrono::milliseconds(mTimerDuration_ms));
   mTimer.async_wait(boost::bind(&SenecDataAcquisitionLibCurl::Acquire, this));
 }
 
 size_t SenecDataAcquisitionLibCurl::WriteCallback(void *contents, size_t size,
                                                   size_t nmemb,
-                                                  std::string *buffer) {
-  buffer->append((char *)contents, size * nmemb);
+                                                  std::string *buffer)
+{
+  // buffer->append((char *)contents, size * nmemb);
+  buffer->append(static_cast<char *>(contents), size * nmemb);
   return size * nmemb;
 }
 
-void SenecDataAcquisitionLibCurl::ParseResponse(const std::string &response) {
+void SenecDataAcquisitionLibCurl::ParseResponse(const std::string &response)
+{
   mTree.clear();
   std::istringstream json_stream(response);
   boost::property_tree::read_json(json_stream, mTree);
 }
 
-void SenecDataAcquisitionLibCurl::ProcessData() {
+void SenecDataAcquisitionLibCurl::ProcessData()
+{
   try {
     // ProcessTimeInformation();
     ProcessInverterData();
@@ -127,38 +136,38 @@ void SenecDataAcquisitionLibCurl::ProcessData() {
 
 void S2O::SenecDataAcquisitionLibCurl::ProcessTimeInformation()
 {
-    std::string utc_offset = mTree.get<std::string>(mTreeElemRtcOffset);
-    ConversionResultOpt utc_offset_cr = Conversion::Convert(utc_offset);
+  auto utc_offset_str = mTree.get<std::string>(mTreeElemRtcOffset);
+  ConversionResultOpt utc_offset_cr = Conversion::Convert(utc_offset_str);
 
-    std::string time = mTree.get<std::string>(mTreeElemWebTime);
-    ConversionResultOpt time_cr = Conversion::Convert(time);
+  std::string time = mTree.get<std::string>(mTreeElemWebTime);
+  ConversionResultOpt time_cr = Conversion::Convert(time);
 
-    if (time_cr.is_initialized() && utc_offset_cr.is_initialized())
-    {
-      auto utc_offset = boost::get<int>(utc_offset_cr.get());
-      std::chrono::minutes offset_minutes(utc_offset);
-      std::chrono::seconds offset_seconds(offset_minutes);
+  if (time_cr.is_initialized() && utc_offset_cr.is_initialized())
+  {
+    auto utc_offset = boost::get<int>(utc_offset_cr.get());
+    std::chrono::minutes offset_minutes(utc_offset);
+    std::chrono::seconds offset_seconds(offset_minutes);
 
     auto timestamp = boost::get<unsigned>(time_cr.get());
     std::time_t time_s_epoch = static_cast<std::time_t>(timestamp);
     std::stringstream ss;
     ss << std::put_time(std::localtime(&time_s_epoch), "%F %T.\n");
     mPublisher.publishTime(ss.str()); // todo: refactor this method
-    }
+  }
 }
 
 void S2O::SenecDataAcquisitionLibCurl::ProcessInverterData()
 {
-    // openWB/set/pv/1/W PV-Erzeugungsleistung in Watt, int, positiv
-    std::string inv_power_raw_str = mTree.get<std::string>(mTreeElemInvPower);
-    std::string inv_power_pub_str;
-    Conversion::ConvertToString(inv_power_raw_str, inv_power_pub_str, false, false);
-    mPublisher.publishStr(mTopicInvPower, inv_power_pub_str);
+  // openWB/set/pv/1/W PV-Erzeugungsleistung in Watt, int, positiv
+  std::string inv_power_raw_str = mTree.get<std::string>(mTreeElemInvPower);
+  std::string inv_power_pub_str;
+  Conversion::ConvertToString(inv_power_raw_str, inv_power_pub_str, false, false);
+  mPublisher.publishStr(mTopicInvPower, inv_power_pub_str);
 
-    // openWB/set/pv/1/WhCounter Erzeugte Energie in Wh, float, nur positiv
-    float inverter_power(std::stof(inv_power_pub_str));
-    mInverterExportedEnergy.Integrate(std::abs(inverter_power));
-    mPublisher.publishStr(mTopicInvEnergy, mInverterExportedEnergy.getIntegratedValueAsStr());
+  // openWB/set/pv/1/WhCounter Erzeugte Energie in Wh, float, nur positiv
+  float inverter_power(std::stof(inv_power_pub_str));
+  mInverterExportedEnergy.Integrate(std::abs(inverter_power));
+  mPublisher.publishStr(mTopicInvEnergy, mInverterExportedEnergy.getIntegratedValueAsStr());
 }
 
 void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
@@ -256,22 +265,22 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
 
 void S2O::SenecDataAcquisitionLibCurl::ProcessBatteryData()
 {
-    // openWB/set/houseBattery/W Speicherleistung in Watt, int, positiv Ladung, negativ Entladung   -> done
-    std::string bat_power_raw_str = mTree.get<std::string>(mTreeElemBatteryPower);
-    std::string bat_power_pub_str;
-    Conversion::ConvertToString(bat_power_raw_str, bat_power_pub_str);
-    mPublisher.publishStr(mTopicBatteryPower, bat_power_pub_str);
+  // openWB/set/houseBattery/W Speicherleistung in Watt, int, positiv Ladung, negativ Entladung   -> done
+  std::string bat_power_raw_str = mTree.get<std::string>(mTreeElemBatteryPower);
+  std::string bat_power_pub_str;
+  Conversion::ConvertToString(bat_power_raw_str, bat_power_pub_str);
+  mPublisher.publishStr(mTopicBatteryPower, bat_power_pub_str);
 
-    // openWB/set/houseBattery/WhImported Geladene Energie in Wh, float, nur positiv
-    // openWB/set/houseBattery/WhExported Entladene Energie in Wh, float, nur positiv
-    float bat_power(std::stof(bat_power_pub_str));
-    std::signbit(bat_power) ? mBatteryExportedEnergy.Integrate(std::abs(bat_power)) : mBatteryImportedEnergy.Integrate(std::abs(bat_power));
-    mPublisher.publishStr(mTopicBatteryImportedEnergy, mBatteryImportedEnergy.getIntegratedValueAsStr());
-    mPublisher.publishStr(mTopicBatteryExportedEnergy, mBatteryExportedEnergy.getIntegratedValueAsStr());
+  // openWB/set/houseBattery/WhImported Geladene Energie in Wh, float, nur positiv
+  // openWB/set/houseBattery/WhExported Entladene Energie in Wh, float, nur positiv
+  float bat_power(std::stof(bat_power_pub_str));
+  std::signbit(bat_power) ? mBatteryExportedEnergy.Integrate(std::abs(bat_power)) : mBatteryImportedEnergy.Integrate(std::abs(bat_power));
+  mPublisher.publishStr(mTopicBatteryImportedEnergy, mBatteryImportedEnergy.getIntegratedValueAsStr());
+  mPublisher.publishStr(mTopicBatteryExportedEnergy, mBatteryExportedEnergy.getIntegratedValueAsStr());
 
-    // openWB/set/houseBattery/%Soc Ladestand des Speichers, int, 0-100
-    std::string bat_soc_raw_str = mTree.get<std::string>(mTreeElemBatterySoc);
-    std::string bat_soc_pub_str;
-    Conversion::ConvertToString(bat_soc_raw_str, bat_soc_pub_str);
-    mPublisher.publishStr(mTopicBatterySoc, bat_soc_pub_str);
+  // openWB/set/houseBattery/%Soc Ladestand des Speichers, int, 0-100
+  std::string bat_soc_raw_str = mTree.get<std::string>(mTreeElemBatterySoc);
+  std::string bat_soc_pub_str;
+  Conversion::ConvertToString(bat_soc_raw_str, bat_soc_pub_str);
+  mPublisher.publishStr(mTopicBatterySoc, bat_soc_pub_str);
 }
