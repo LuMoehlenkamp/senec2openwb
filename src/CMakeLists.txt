@@ -11,6 +11,11 @@ find_package(Boost REQUIRED COMPONENTS
 
 # set(PROJECT_LIB ${PROJECT_LIB} ${Boost_LOG_LIBRARY} ${Boost_LOG_SETUP_LIBRARY})
 
+# find_package(OpenSSL "3.0" REQUIRED)
+# MESSAGE (STATUS "Found? ${OPENSSL_FOUND}")
+# MESSAGE (STATUS "Root: ${OPENSSL_ROOT_DIR}")
+# MESSAGE (STATUS "Incl: ${OPENSSL_INCLUDE_DIR}")
+# MESSAGE (STATUS "Crypt: ${OPENSSL_CRYPTO_LIBRARY}")
 find_package(PahoMqttCpp REQUIRED)
 
 add_definitions(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
@@ -22,6 +27,7 @@ target_link_libraries(${PROJECT_NAME_STR} PUBLIC
                       ${Boost_LOG_LIBRARY}
                       PahoMqttCpp::paho-mqttpp3-static
                       ${LIBS_SYSTEM}
+                      stdc++
                       stdc++fs
                       ssl
                       crypto
