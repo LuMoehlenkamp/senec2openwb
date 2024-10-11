@@ -13,9 +13,12 @@
 
 namespace S2O {
 const std::string ERROR = "error";
-class Conversion {
+// clang-format off
+class Conversion
+{
 public:
-  static float ConvertToFloat(const std::string &inString) {
+  static float ConvertToFloat(const std::string &inString)
+  {
     split_vector_type SplitVec;
     unsigned x;
     std::stringstream ss;
@@ -30,7 +33,8 @@ public:
 
   static uint32_t ConvertToUint(const std::string &inString);
 
-  static ConversionResultOpt Convert(const std::string &inString) {
+  static ConversionResultOpt Convert(const std::string &inString)
+  {
     split_vector_type SplitVec;
     boost::split(SplitVec, inString, boost::is_any_of("_"),
                  boost::token_compress_on);
@@ -60,7 +64,8 @@ public:
 
   static void ConvertToString(const std::string &inString,
                               std::string &outString, bool invert = false,
-                              bool keepDecimals = false) {
+                              bool keepDecimals = false)
+  {
     try {
       split_vector_type SplitVec;
       boost::split(SplitVec, inString, boost::is_any_of("_"),
@@ -80,22 +85,23 @@ public:
         else
           outString = std::to_string(static_cast<long>(f_value));
       } else if (SplitVec[0] == "u8" || SplitVec[0] == "u3") {
-        if (value > static_cast<unsigned long long>(UINT_MAX)) {
+        if (value > static_cast<long>(UINT_MAX)) {
           throw std::out_of_range("Unsigned value overflows uint");
         }
         outString = std::to_string(static_cast<unsigned>(value));
       } else if (SplitVec[0] == "i3") {
-        if (value > static_cast<unsigned long long>(INT_MAX)) {
+        if (value > static_cast<long>(INT_MAX)) {
           throw std::out_of_range("Unsigned value overflows int");
         }
-        outString = std::to_string(static_cast<int>(value));
+        outString = std::to_string(static_cast<long>(value));
       }
     } catch (const std::exception &e) {
       std::cerr << e.what() << '\n';
     }
   }
 
-  static void ConvertToFloatVal(const std::string &inString, float &outValue) {
+  static void ConvertToFloatVal(const std::string &inString, float &outValue)
+  {
     float value(0.0f);
     try {
       value = std::stof(inString);

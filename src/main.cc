@@ -17,7 +17,7 @@ void SignalHandler(int signal) {
   exit(1);
 }
 
-int main(int argc, char *argv[]) {
+int main() {
   S2O::ConfigManager *p_config_manager(
       S2O::ConfigManager::GetInstance(S2O::ConfigManager::CONFIG_PATH));
   auto senec_update_time_opt = p_config_manager->GetSenecUpdateTime();
@@ -27,8 +27,7 @@ int main(int argc, char *argv[]) {
   if (!senec_update_time_opt.is_initialized() ||
       !senec_timeout_time_opt.is_initialized() ||
       !senec_connect_timeout_time_opt.is_initialized()) {
-    std::cerr << "incomplete configuration. GoodBye!"
-              << "\n";
+    std::cerr << "incomplete configuration. GoodBye!" << "\n";
     return -1;
   }
   try {
