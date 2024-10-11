@@ -1,0 +1,12 @@
+[requires]
+boost/1.83.0
+zlib/1.2.11
+openssl/3.3.2
+paho-mqtt-cpp/1.4.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+
+[layout]
+cmake_layout
