@@ -1,4 +1,5 @@
 services:
+
   senec2openwb:
     image: ludgerm/senec2openwb
     build: .
@@ -20,6 +21,7 @@ services:
         delay: 5s
         # max_attempts: 5
         window: 20s
+
   mosquitto:
     image: eclipse-mosquitto
     ports:
@@ -33,9 +35,9 @@ services:
       - mosquitto_net
     deploy:
       restart_policy:
-        condition: on-failure
+        condition: unless-stopped
         delay: 5s
-        max_attempts: 5
+        # max_attempts: 5
         window: 20s
 
 networks:
