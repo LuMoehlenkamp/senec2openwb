@@ -17,6 +17,20 @@ const std::string ERROR = "error";
 class Conversion
 {
 public:
+  static std::string floatToString(float value, uint precision)
+  {
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(precision) << value;
+    return ss.str();
+  }
+
+  static std::string doubleToString(double value, uint precision)
+  {
+    std::stringstream ss;
+    ss << std::fixed << std::setprecision(precision) << value;
+    return ss.str();
+  }
+
   static float ConvertToFloat(const std::string &inString)
   {
     split_vector_type SplitVec;
@@ -64,7 +78,7 @@ public:
 
   static void ConvertToString(const std::string &inString,
                               std::string &outString, bool invert = false,
-                              bool keepDecimals = false)
+                              uint decimals = 2)
   {
     try {
       split_vector_type SplitVec;
@@ -80,10 +94,7 @@ public:
       }
       if (SplitVec[0] == "fl") {
         float f_value = reinterpret_cast<float &>(value);
-        if (keepDecimals)
-          outString = std::to_string(f_value);
-        else
-          outString = std::to_string(static_cast<long>(f_value));
+        outString = floatToString(f_value, decimals);
       } else if (SplitVec[0] == "u8" || SplitVec[0] == "u3") {
         if (value > static_cast<long>(UINT_MAX)) {
           throw std::out_of_range("Unsigned value overflows uint");

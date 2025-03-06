@@ -161,7 +161,7 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessInverterData()
   // openWB/set/pv/1/W PV-Erzeugungsleistung in Watt, int, positiv
   std::string inv_power_raw_str = mTree.get<std::string>(mTreeElemInvPower);
   std::string inv_power_pub_str;
-  Conversion::ConvertToString(inv_power_raw_str, inv_power_pub_str, false, false);
+  Conversion::ConvertToString(inv_power_raw_str, inv_power_pub_str);
   mPublisher.publishStr(mTopicInvPower, inv_power_pub_str);
 
   // openWB/set/pv/1/WhCounter Erzeugte Energie in Wh, float, nur positiv
@@ -188,7 +188,7 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
   // openWB/set/evu/HzFrequenz oder openWB/set/evu/Hz Netzfrequenz in Hz, float, Punkt als Trenner
   std::string frequency_raw_str = mTree.get<std::string>(mTreeElemFreq);
   std::string frequency_pub_str;
-  Conversion::ConvertToString(frequency_raw_str, frequency_pub_str, false, true);
+  Conversion::ConvertToString(frequency_raw_str, frequency_pub_str);
   mPublisher.publishStr(mTopicFrequency, frequency_pub_str);
 
   // openWB/set/evu/WPhase1 (2,3) Leistung in Watt für Phase 1 (2,3), float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
@@ -205,7 +205,7 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
        ++raw_it, ++power_vals_it)
   {
     std::string power_pub_str;
-    Conversion::ConvertToString(*raw_it, power_pub_str, false, true);
+    Conversion::ConvertToString(*raw_it, power_pub_str);
     powers_str_vec.push_back(power_pub_str);
     Conversion::ConvertToFloatVal(power_pub_str, *power_vals_it);
   }
@@ -225,7 +225,7 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
        ++raw_it, ++volt_vals_it)
   {
     std::string voltage_pub_str;
-    Conversion::ConvertToString(*raw_it, voltage_pub_str, false, true);
+    Conversion::ConvertToString(*raw_it, voltage_pub_str);
     volts_str_vec.push_back(voltage_pub_str);
     Conversion::ConvertToFloatVal(voltage_pub_str, *volt_vals_it);
   }
@@ -247,7 +247,7 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
        ++raw_it, ++powers_it, ++amps_vals_it)
   {
     std::string current_pub_str;
-    Conversion::ConvertToString(*raw_it, current_pub_str, std::signbit(*powers_it), true);
+    Conversion::ConvertToString(*raw_it, current_pub_str, std::signbit(*powers_it));
     amps_str_vec.push_back(current_pub_str);
     Conversion::ConvertToFloatVal(current_pub_str, *amps_vals_it);
   }
