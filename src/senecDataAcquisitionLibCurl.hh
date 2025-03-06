@@ -38,7 +38,7 @@ private:
   const std::string mTopicInvEnergy{"openWB/set/pv/2/get/exported "};
 
   const std::string mTreeElemGridPower{"ENERGY.GUI_GRID_POW"};
-  const std::string mTopicGridPower{"openWB/set/counter/0/get/W"};
+  const std::string mTopicGridPower{"openWB/set/counter/0/get/power"};
   const std::string mTopicGridImportedEnergy{"openWB/set/counter/0/get/imported"};
   const std::string mTopicGridExportedEnergy{"openWB/set/counter/0/get/exported"};
   const std::string mTreeElemFreq{"PM1OBJ1.FREQ"};
