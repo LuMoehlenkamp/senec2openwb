@@ -2,6 +2,7 @@
 
 #include "dataAcquisitionDefines.hh"
 
+#include <cstring>
 #include <iostream>
 #include <sstream>
 #include <stdlib.h>
@@ -17,14 +18,14 @@ const std::string ERROR = "error";
 class Conversion
 {
 public:
-  static std::string floatToString(float value, uint precision)
+  static std::string floatToString(float value, int precision)
   {
     std::stringstream ss;
     ss << std::fixed << std::setprecision(precision) << value;
     return ss.str();
   }
 
-  static std::string doubleToString(double value, uint precision)
+  static std::string doubleToString(double value, int precision)
   {
     std::stringstream ss;
     ss << std::fixed << std::setprecision(precision) << value;
@@ -78,7 +79,7 @@ public:
 
   static void ConvertToString(const std::string &inString,
                               std::string &outString, bool invert = false,
-                              uint decimals = 2)
+                              int decimals = 2)
   {
     try {
       split_vector_type SplitVec;
@@ -93,8 +94,10 @@ public:
         value *= -1L;
       }
       if (SplitVec[0] == "fl") {
-        float f_value = reinterpret_cast<float &>(value);
+        float f_value;
+        std::memcpy(&f_value, &value, sizeof(float));
         outString = floatToString(f_value, decimals);
+        std::cout << outString << '\n';
       } else if (SplitVec[0] == "u8" || SplitVec[0] == "u3") {
         if (value > static_cast<long>(UINT_MAX)) {
           throw std::out_of_range("Unsigned value overflows uint");
