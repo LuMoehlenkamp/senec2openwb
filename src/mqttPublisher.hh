@@ -1,5 +1,6 @@
 #include <atomic>
 #include <string>
+#include <vector>
 
 #include "mqtt/async_client.h"
 
@@ -67,8 +68,11 @@ public:
   void publishFloat(const std::string &topic, float value);
   void publishInt(const std::string &topic, int value);
   void publishStr(const std::string &topic, const std::string &valueStr);
+  void publishStrVec(const std::string &topic, const std::vector<std::string> &valueStrVec);
 
 private:
+  void serialize(const std::vector<std::string>& valueStrVec, std::string resultStr) const;
+
   std::string mIpAddress;
   std::string mClientId;
   mqtt::async_client mClient;

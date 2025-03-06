@@ -193,74 +193,78 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
 
   // openWB/set/evu/WPhase1 (2,3) Leistung in Watt für Phase 1 (2,3), float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
   std::vector<std::string> powers_raw_str_vec;
-  std::vector<float> powers_fl_vec;
+  std::vector<std::string> powers_str_vec;
   for (boost::property_tree::ptree::value_type &power : mTree.get_child(mTreeElemGridPowers))
   {
     powers_raw_str_vec.push_back(power.second.data());
   }
 
   auto power_vals_it(mPowerValues.begin());
-  for (auto pow_topics_it = mTopicGridPowersVec.begin(), raw_it = powers_raw_str_vec.begin();
+  for (auto raw_it = powers_raw_str_vec.begin();
        raw_it != powers_raw_str_vec.end();
-       ++pow_topics_it, ++raw_it, ++power_vals_it)
+       ++raw_it, ++power_vals_it)
   {
     std::string power_pub_str;
     Conversion::ConvertToString(*raw_it, power_pub_str, false, true);
-    powers_fl_vec.push_back(std::stof(power_pub_str));
-    mPublisher.publishStr(*pow_topics_it, power_pub_str);
+    powers_str_vec.push_back(power_pub_str);
     Conversion::ConvertToFloatVal(power_pub_str, *power_vals_it);
   }
+  mPublisher.publishStrVec(mTopicGridPowers, powers_str_vec);
 
   // openWB/set/evu/VPhase1 (2,3) Spannung in Volt für Phase 1 (2,3), float, Punkt als Trenner
   std::vector<std::string> volts_raw_str_vec;
+  std::vector<std::string> volts_str_vec;
   for (boost::property_tree::ptree::value_type &voltage : mTree.get_child(mTreeElemVoltages))
   {
     volts_raw_str_vec.push_back(voltage.second.data());
   }
 
   auto volt_vals_it(mVoltageValues.begin());
-  for (auto volt_topics_it = mTopicGridVoltagesVec.begin(), raw_it = volts_raw_str_vec.begin();
+  for (auto raw_it = volts_raw_str_vec.begin();
        raw_it != volts_raw_str_vec.end();
-       ++volt_topics_it, ++raw_it, ++volt_vals_it)
+       ++raw_it, ++volt_vals_it)
   {
     std::string voltage_pub_str;
     Conversion::ConvertToString(*raw_it, voltage_pub_str, false, true);
-    mPublisher.publishStr(*volt_topics_it, voltage_pub_str);
+    volts_str_vec.push_back(voltage_pub_str);
     Conversion::ConvertToFloatVal(voltage_pub_str, *volt_vals_it);
   }
+  mPublisher.publishStrVec(mTopicGridVoltages, volts_str_vec);
 
   // openWB/set/evu/APhase1 (2,3) Strom in Ampere für Phase 1 (2,3), float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
   std::vector<std::string> amps_raw_str_vec;
+  std::vector<std::string> amps_str_vec;
   for (boost::property_tree::ptree::value_type &current : mTree.get_child(mTreeElemCurrents))
   {
     amps_raw_str_vec.push_back(current.second.data());
   }
 
   auto amps_vals_it(mCurrentValues.begin());
-  auto amps_topics_it = mTopicGridCurrentsVec.begin();
   auto raw_it = amps_raw_str_vec.begin();
-  auto powers_it = powers_fl_vec.begin();
+  auto powers_it = mPowerValues.begin();
   for ( ;
        raw_it != amps_raw_str_vec.end();
-       ++amps_topics_it, ++raw_it, ++powers_it, ++amps_vals_it)
+       ++raw_it, ++powers_it, ++amps_vals_it)
   {
     std::string current_pub_str;
     Conversion::ConvertToString(*raw_it, current_pub_str, std::signbit(*powers_it), true);
-    mPublisher.publishStr(*amps_topics_it, current_pub_str);
+    amps_str_vec.push_back(current_pub_str);
     Conversion::ConvertToFloatVal(current_pub_str, *amps_vals_it);
   }
+  mPublisher.publishStrVec(mTopicGridCurrents, amps_str_vec);
 
   // openWB/set/evu/PfPhase1 (2,3) Powerfaktor für Phase 1 (2,3), float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
-  auto pf_topics_it = mTopicGridPowerFactorVec.begin();
   auto volt_value_it = mVoltageValues.begin();
   auto amps_value_it = mCurrentValues.begin();
   auto pow_value_it = mPowerValues.begin();
-  for (; pf_topics_it != mTopicGridPowerFactorVec.end(); ++pf_topics_it, ++volt_value_it, ++amps_value_it, ++pow_value_it)
+  std::vector<std::string> power_factor_str_vec;
+  for (; volt_value_it != mVoltageValues.end(); ++volt_value_it, ++amps_value_it, ++pow_value_it)
   {
     float apparent_power(*volt_vals_it * *amps_value_it);
     float power_factor(*pow_value_it / apparent_power);
-    mPublisher.publishStr(*pf_topics_it, std::to_string(power_factor));
+    power_factor_str_vec.push_back(std::to_string(power_factor));
   }
+  mPublisher.publishStrVec(mTopicGridPowerFactor, power_factor_str_vec);
 }
 
 void S2O::SenecDataAcquisitionLibCurl::ProcessBatteryData()

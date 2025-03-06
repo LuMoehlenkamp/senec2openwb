@@ -1,5 +1,7 @@
 #include "mqttPublisher.hh"
 
+#include <sstream>
+
 using namespace S2O;
 
 const int QOS(0);
@@ -54,4 +56,20 @@ void mqttPublisher::publishStr(const std::string &topic,
       mqtt::make_message(topic, valueStr.c_str(), QOS, false);
   if (mClient.is_connected())
     mClient.publish(pubmsg)->wait_for(TIMEOUT);
+}
+
+void mqttPublisher::publishStrVec(const std::string &topic,
+                                  const std::vector<std::string> &valueStrVec) {
+  std::string serialized_vec;
+  serialize(valueStrVec, serialized_vec);
+  publishStr(topic, serialized_vec);
+}
+
+void mqttPublisher::serialize(const std::vector<std::string> &valueStrVec,
+                              std::string resultStr) const {
+  std::stringstream ss;
+  for (const auto &str : valueStrVec) {
+    ss << str << ",";
+  }
+  resultStr = ss.str();
 }
