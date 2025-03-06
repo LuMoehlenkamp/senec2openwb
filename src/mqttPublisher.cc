@@ -1,5 +1,6 @@
 #include "mqttPublisher.hh"
 
+#include <iostream> // ToDo: rmove after testing
 #include <sstream>
 
 using namespace S2O;
@@ -78,4 +79,5 @@ void mqttPublisher::serialize(const std::vector<std::string> &valueStrVec,
     ss << str;
   }
   resultStr = ss.str();
+  std::cout << resultStr << '\n';
 }
