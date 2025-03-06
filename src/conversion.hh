@@ -27,8 +27,8 @@ public:
                  boost::token_compress_on);
     ss << std::hex << SplitVec[SplitVec.size() - 1];
     ss >> x;
-
-    return reinterpret_cast<float &>(x);
+    auto ret = reinterpret_cast<float *>(&x);
+    return *ret;
   }
 
   static uint32_t ConvertToUint(const std::string &inString);
