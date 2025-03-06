@@ -39,7 +39,6 @@ void SenecDataAcquisitionLibCurl::Acquire()
     std::cerr << "Curl not initialized" << '\n';
     return;
   }
-  // std::cout << "attempting to acquire data" << '\n';
   CURLcode res;
   std::string response;
   curl_easy_setopt(mCurl, CURLOPT_URL, mUrl.c_str());

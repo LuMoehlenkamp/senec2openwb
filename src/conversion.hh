@@ -58,17 +58,23 @@ public:
     ss << std::hex << SplitVec[SplitVec.size() - 1];
     unsigned long value;
     ss >> value;
-    if (SplitVec[0] == "fl") {
+
+    if (SplitVec[0] == "fl")
+    {
       return_val = reinterpret_cast<float &>(value);
       return return_val;
-    } else if (SplitVec[0] == "u8" || SplitVec[0] == "u3") {
-      if (value > static_cast<unsigned long long>(UINT_MAX)) {
+    } else if (SplitVec[0] == "u8" || SplitVec[0] == "u3")
+    {
+      if (value > static_cast<unsigned long long>(UINT_MAX))
+      {
         throw std::out_of_range("Unsigned value overflows uint");
       }
       return_val = static_cast<unsigned>(value);
       return return_val;
-    } else if (SplitVec[0] == "i3") {
-      if (value > static_cast<unsigned long long>(INT_MAX)) {
+    } else if (SplitVec[0] == "i3")
+    {
+      if (value > static_cast<unsigned long long>(INT_MAX))
+      {
         throw std::out_of_range("Unsigned value overflows int");
       }
       return_val = static_cast<int>(value);
@@ -79,7 +85,7 @@ public:
 
   static void ConvertToString(const std::string &inString,
                               std::string &outString, bool invert = false,
-                              int decimals = 2)
+                              int decimals = 1)
   {
     try {
       split_vector_type SplitVec;
@@ -97,7 +103,6 @@ public:
         float f_value;
         std::memcpy(&f_value, &value, sizeof(float));
         outString = floatToString(f_value, decimals);
-        std::cout << outString << '\n';
       } else if (SplitVec[0] == "u8" || SplitVec[0] == "u3") {
         if (value > static_cast<long>(UINT_MAX)) {
           throw std::out_of_range("Unsigned value overflows uint");
