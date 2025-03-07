@@ -71,7 +71,7 @@ public:
   void publishStrVec(const std::string &topic, const std::vector<std::string> &valueStrVec);
 
 private:
-  void serialize(const std::vector<std::string>& valueStrVec, std::string resultStr) const;
+  std::string serialize(const std::vector<std::string>& valueStrVec) const;
 
   std::string mIpAddress;
   std::string mClientId;
