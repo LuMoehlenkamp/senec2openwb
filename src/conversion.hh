@@ -92,16 +92,15 @@ public:
       boost::split(SplitVec, inString, boost::is_any_of("_"),
                    boost::token_compress_on);
       std::stringstream ss;
-      ConversionResult return_val;
       ss << std::hex << SplitVec[SplitVec.size() - 1];
       long value;
       ss >> value;
-      if (invert) {
-        value *= -1L;
-      }
       if (SplitVec[0] == "fl") {
         float f_value;
         std::memcpy(&f_value, &value, sizeof(float));
+        if (invert) {
+          f_value *= -1.f;
+        }
         outString = floatToString(f_value, decimals);
       } else if (SplitVec[0] == "u8" || SplitVec[0] == "u3") {
         if (value > static_cast<long>(UINT_MAX)) {
@@ -112,7 +111,10 @@ public:
         if (value > static_cast<long>(INT_MAX)) {
           throw std::out_of_range("Unsigned value overflows int");
         }
-        outString = std::to_string(static_cast<long>(value));
+        if (invert) {
+          value *= -1;
+        }
+        outString = std::to_string(value);
       }
     } catch (const std::exception &e) {
       std::cerr << e.what() << '\n';
@@ -126,9 +128,8 @@ public:
       value = std::stof(inString);
     } catch (const std::invalid_argument &e) {
       std::cerr << "Ungültiger String für die Konvertierung: " << e.what()
-                << std::endl;
+                << '\n';
       outValue = 0.0f;
-      return;
     }
     outValue = value;
   }
