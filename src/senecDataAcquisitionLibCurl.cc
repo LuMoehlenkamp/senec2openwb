@@ -260,7 +260,7 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
   {
     float apparent_power((*volt_value_it) * (*amps_value_it));
     float power_factor((*pow_value_it) / apparent_power);
-    power_factor_str_vec.push_back(std::to_string(power_factor));
+    power_factor_str_vec.push_back(Conversion::floatToString(power_factor, 3));
   }
   mPublisher.publishStrVec(mTopicGridPowerFactor, power_factor_str_vec);
 }

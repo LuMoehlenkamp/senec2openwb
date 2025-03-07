@@ -67,6 +67,7 @@ void mqttPublisher::publishStrVec(const std::string &topic,
   std::string serialized_vec;
   serialize(valueStrVec, serialized_vec);
   publishStr(topic, serialized_vec);
+  std::cout << serialized_vec << '\n';
 }
 
 void mqttPublisher::serialize(const std::vector<std::string> &valueStrVec,
@@ -74,13 +75,12 @@ void mqttPublisher::serialize(const std::vector<std::string> &valueStrVec,
   std::stringstream ss;
   bool first = true;
   for (const auto &str : valueStrVec) {
-    if (!first) {
-      ss << ",";
-    } else {
+    if (first) {
       first = false;
+    } else {
+      ss << ",";
     }
     ss << str;
   }
   resultStr = ss.str();
-  std::cout << resultStr << '\n';
 }

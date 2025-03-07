@@ -44,15 +44,15 @@ private:
   const std::string mTreeElemFreq{"PM1OBJ1.FREQ"};
   const std::string mTopicFrequency{"openWB/set/counter/0/get/frequency"};
   const std::string mTreeElemGridPowers{"PM1OBJ1.P_AC"};
-  std::string mTopicGridPowers{"openWB/set/counter/0/get/powers"};
+  const std::string mTopicGridPowers{"openWB/set/counter/0/get/powers"};
   std::array<float, 3> mPowerValues{0.0f, 0.0f, 0.0f};
   const std::string mTreeElemVoltages{"PM1OBJ1.U_AC"};
-  std::string mTopicGridVoltages{"openWB/set/counter/0/get/voltages"};
+  const std::string mTopicGridVoltages{"openWB/set/counter/0/get/voltages"};
   std::array<float, 3> mVoltageValues{0.0f, 0.0f, 0.0f};
   const std::string mTreeElemCurrents{"PM1OBJ1.I_AC"};
-  std::string mTopicGridCurrents{"openWB/set/counter/0/get/currents"};
+  const std::string mTopicGridCurrents{"openWB/set/counter/0/get/currents"};
   std::array<float, 3> mCurrentValues{0.0f, 0.0f, 0.0f};
-  std::string mTopicGridPowerFactor{"openWB/set/counter/0/get/power_factors"};
+  const std::string mTopicGridPowerFactor{"openWB/set/counter/0/get/power_factors"};
   const std::string mPowerFactorValue{"1.0"};
 
   const std::string mTreeElemBatteryPower{"ENERGY.GUI_BAT_DATA_POWER"};
