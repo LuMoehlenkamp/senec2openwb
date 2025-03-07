@@ -160,7 +160,7 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessInverterData()
   // openWB/set/pv/1/W PV-Erzeugungsleistung in Watt, int, positiv
   std::string inv_power_raw_str = mTree.get<std::string>(mTreeElemInvPower);
   std::string inv_power_pub_str;
-  Conversion::ConvertToString(inv_power_raw_str, inv_power_pub_str);
+  Conversion::ConvertToString(inv_power_raw_str, inv_power_pub_str, true, 2);
   mPublisher.publishStr(mTopicInvPower, inv_power_pub_str);
 
   // openWB/set/pv/1/WhCounter Erzeugte Energie in Wh, float, nur positiv
@@ -284,6 +284,6 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessBatteryData()
   // openWB/set/houseBattery/%Soc Ladestand des Speichers, int, 0-100
   std::string bat_soc_raw_str = mTree.get<std::string>(mTreeElemBatterySoc);
   std::string bat_soc_pub_str;
-  Conversion::ConvertToString(bat_soc_raw_str, bat_soc_pub_str);
+  Conversion::ConvertToString(bat_soc_raw_str, bat_soc_pub_str, false, 0);
   mPublisher.publishStr(mTopicBatterySoc, bat_soc_pub_str);
 }

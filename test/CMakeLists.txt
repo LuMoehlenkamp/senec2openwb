@@ -6,11 +6,12 @@ find_package(Boost REQUIRED COMPONENTS
                       filesystem
                       # log_setup
                       # log
+                      program_options
                       regex
                       serialization
+                      system
                       thread
                       timer
-                      system
                       unit_test_framework)
 
 # Gather the header and source files
@@ -41,6 +42,7 @@ target_link_libraries(${PROJECT_UNIT_TESTS_NAME}
                       ${Boost_LIBRARIES}
                       ${Boost_LOG_LIBRARY}
                       PahoMqttCpp::paho-mqttpp3-static
+                      ${LIBS_SYSTEM}
                       stdc++
                       stdc++fs
                       ssl
