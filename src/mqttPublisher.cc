@@ -25,6 +25,9 @@ mqttPublisher::mqttPublisher()
   try {
     mqtt::token_ptr conntok = mClient.connect(mConnOpts);
     conntok->wait();
+  } catch (const mqtt::exception &e) {
+    std::cerr << e.what() << '\n';
+    return;
   } catch (const std::exception &e) {
     std::cerr << e.what() << '\n';
   }
@@ -79,4 +82,5 @@ void mqttPublisher::serialize(const std::vector<std::string> &valueStrVec,
     ss << str;
   }
   resultStr = ss.str();
+  std::cout << resultStr << '\n';
 }
