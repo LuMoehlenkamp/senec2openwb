@@ -71,7 +71,7 @@ void mqttPublisher::publishStrVec(const std::string &topic,
 }
 
 void mqttPublisher::serialize(const std::vector<std::string> &valueStrVec,
-                              std::string resultStr) const {
+                              std::string& resultStr) const {
   std::stringstream ss;
   bool first = true;
   for (const auto &str : valueStrVec) {
