@@ -49,6 +49,8 @@ bool Integrator::DayChangeOccured(
 
 void Integrator::Reset() { integrated_value = 0.00f; }
 
+float Integrator::getIntegratedValue() const { return integrated_value; }
+
 std::string Integrator::getIntegratedValueAsStr(int decimals) const {
   std::stringstream ss;
   ss << std::fixed << std::setprecision(decimals) << integrated_value;

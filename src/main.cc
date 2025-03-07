@@ -34,10 +34,13 @@ int main() {
     boost::asio::io_context ioContext;
     boost::asio::executor_work_guard<boost::asio::io_context::executor_type>
         work = boost::asio::make_work_guard(ioContext);
-    S2O::SenecDataAcquisitionLibCurl senec_lcda(
-        ioContext, senec_update_time_opt.get(), senec_timeout_time_opt.get(),
+    // clang-format off
+    S2O::SenecDataAcquisitionLibCurl senec_da_lc(
+        ioContext,
+        senec_update_time_opt.get(),
+        senec_timeout_time_opt.get(),
         senec_connect_timeout_time_opt.get());
-
+    // clang-format on
     std::signal(SIGINT, ::SignalHandler);  // SIGINT 2
     std::signal(SIGTERM, ::SignalHandler); // SIGTERM 15
     ioContext.run();
