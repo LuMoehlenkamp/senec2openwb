@@ -76,7 +76,6 @@ private:
                               std::string *buffer);
   void ParseResponse(const std::string &response);
   void ProcessData();
-  void ProcessTimeInformation();
   void ProcessInverterData();
   void ProcessGridData();
   void ProcessBatteryData();

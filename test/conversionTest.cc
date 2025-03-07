@@ -15,9 +15,12 @@ struct ConversionTestFixture {
 
 BOOST_FIXTURE_TEST_SUITE(Integrator_Valid_Input_Values, ConversionTestFixture)
 
+BOOST_AUTO_TEST_CASE(conversion_start) {
+  std::cout << "starting conversion-test" << '\n';
+}
+
 BOOST_AUTO_TEST_CASE(
     ConvertStringToValue_StringIsConvertible_ConvertsAsExpected) {
-  std::cout << "starting conversion-test" << '\n';
   std::string pi_str("3.1415");
   float expected{3.1415f};
   float value;

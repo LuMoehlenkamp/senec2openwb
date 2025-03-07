@@ -30,9 +30,12 @@ struct ConfigManagerTestInvalidFixture {
 
 BOOST_FIXTURE_TEST_SUITE(ConfigManagerTest_Valid, ConfigManagerTestValidFixture)
 
+BOOST_AUTO_TEST_CASE(config_start) {
+  std::cout << "starting config-manager-test" << '\n';
+}
+
 BOOST_AUTO_TEST_CASE(
     GetInstance_ValidConfigPath_ReturnsValidPointerAndExpectedParameters) {
-  std::cout << "starting config-manager-test" << '\n';
   bool expected_testmode(true);
   unsigned expected_senec_update_time = 3000U;
   std::string expected_open_wb_ip = "192.168.178.20";
@@ -67,6 +70,10 @@ BOOST_AUTO_TEST_CASE(GetInstance_InvalidPath_DoesNotThrow) {
   BOOST_REQUIRE_NO_THROW(senec_update_time =
                              mpConfigManager->GetSenecUpdateTime());
   BOOST_CHECK(!senec_update_time.is_initialized());
+}
+
+BOOST_AUTO_TEST_CASE(config_end) {
+  std::cout << "finished config-manager-test" << '\n';
 }
 
 BOOST_AUTO_TEST_SUITE_END()

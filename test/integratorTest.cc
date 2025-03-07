@@ -22,8 +22,11 @@ struct IntegratorValidValuesFixture {
 BOOST_FIXTURE_TEST_SUITE(Integrator_Valid_Input_Values,
                          IntegratorValidValuesFixture)
 
-BOOST_AUTO_TEST_CASE(Positive_Values_Test) {
+BOOST_AUTO_TEST_CASE(integrator_start) {
   std::cout << "starting integrator-test" << '\n';
+}
+
+BOOST_AUTO_TEST_CASE(Positive_Values_Test) {
   mIntegrator.Integrate(mPositiveNormalValue);
   mIntegrator.Integrate(mPositiveNormalValue);
 
@@ -55,6 +58,10 @@ BOOST_AUTO_TEST_CASE(Zero_Values_Test) {
 
   BOOST_REQUIRE(integrated_value == ZERO);
   BOOST_REQUIRE(integrated_value_str == "0.000");
+}
+
+BOOST_AUTO_TEST_CASE(integrator_end) {
+  std::cout << "finished integrator-test" << '\n';
 }
 
 BOOST_AUTO_TEST_SUITE_END()
