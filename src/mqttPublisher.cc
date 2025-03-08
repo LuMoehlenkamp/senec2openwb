@@ -75,10 +75,12 @@ mqttPublisher::serialize(const std::vector<std::string> &valueStrVec) const {
   for (const auto &str : valueStrVec) {
     if (first) {
       first = false;
+      ss << "[";
     } else {
-      ss << ",";
+      ss << ", ";
     }
     ss << str;
   }
+  ss << "]";
   return std::move(ss.str());
 }

@@ -201,7 +201,7 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
        ++raw_it, ++volt_vals_it)
   {
     std::string voltage_pub_str;
-    Conversion::ConvertToString(*raw_it, voltage_pub_str, false, 2);
+    Conversion::ConvertToString(*raw_it, voltage_pub_str, false, 1);
     volts_str_vec.push_back(voltage_pub_str);
     Conversion::ConvertToFloatVal(voltage_pub_str, *volt_vals_it);
   }
@@ -237,7 +237,7 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
   {
     float apparent_power((*volt_value_it) * (*amps_value_it));
     float power_factor((*pow_value_it) / apparent_power);
-    power_factor_str_vec.push_back(Conversion::floatToString(power_factor, 3));
+    power_factor_str_vec.push_back(Conversion::floatToString(power_factor, 2));
   }
   mPublisher.publishStrVec(mTopicGridPowerFactor, power_factor_str_vec);
 }
