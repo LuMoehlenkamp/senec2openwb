@@ -1,5 +1,8 @@
 #include "mqttPublisher.hh"
 
+#include <iostream> // ToDo: rmove after testing
+#include <sstream>
+
 using namespace S2O;
 
 const int QOS(0);
@@ -22,6 +25,9 @@ mqttPublisher::mqttPublisher()
   try {
     mqtt::token_ptr conntok = mClient.connect(mConnOpts);
     conntok->wait();
+  } catch (const mqtt::exception &e) {
+    std::cerr << e.what() << '\n';
+    return;
   } catch (const std::exception &e) {
     std::cerr << e.what() << '\n';
   }
@@ -54,4 +60,27 @@ void mqttPublisher::publishStr(const std::string &topic,
       mqtt::make_message(topic, valueStr.c_str(), QOS, false);
   if (mClient.is_connected())
     mClient.publish(pubmsg)->wait_for(TIMEOUT);
+}
+
+void mqttPublisher::publishStrVec(const std::string &topic,
+                                  const std::vector<std::string> &valueStrVec) {
+  std::string serialized_vec(serialize(valueStrVec));
+  publishStr(topic, serialized_vec);
+}
+
+std::string
+mqttPublisher::serialize(const std::vector<std::string> &valueStrVec) const {
+  std::stringstream ss;
+  bool first = true;
+  for (const auto &str : valueStrVec) {
+    if (first) {
+      first = false;
+      ss << "[";
+    } else {
+      ss << ", ";
+    }
+    ss << str;
+  }
+  ss << "]";
+  return std::move(ss.str());
 }

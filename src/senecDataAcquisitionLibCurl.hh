@@ -13,6 +13,8 @@
 #include <vector>
 
 namespace S2O {
+
+// clang-format off
 class SenecDataAcquisitionLibCurl {
 private:
   CURL *mCurl;
@@ -32,42 +34,32 @@ private:
   const std::string mTreeElemWebTime{"RTC.WEB_TIME"};
 
   const std::string mTreeElemInvPower{"ENERGY.GUI_INVERTER_POWER"};
-  const std::string mTopicInvPower{"openWB/set/pv/1/W"};
-  const std::string mTopicInvEnergy{"openWB/set/pv/1/WhCounter"};
+  const std::string mTopicInvPower{"openWB/set/pv/2/get/power"};
+  const std::string mTopicInvEnergy{"openWB/set/pv/2/get/exported "};
 
   const std::string mTreeElemGridPower{"ENERGY.GUI_GRID_POW"};
-  const std::string mTopicGridPower{"openWB/set/evu/W"};
-  const std::string mTopicGridImportedEnergy{"openWB/set/evu/WhImported"};
-  const std::string mTopicGridExportedEnergy{"openWB/set/evu/WhExported"};
+  const std::string mTopicGridPower{"openWB/set/counter/0/get/power"};
+  const std::string mTopicGridImportedEnergy{"openWB/set/counter/0/get/imported"};
+  const std::string mTopicGridExportedEnergy{"openWB/set/counter/0/get/exported"};
   const std::string mTreeElemFreq{"PM1OBJ1.FREQ"};
-  const std::string mTopicFrequency{"openWB/set/evu/HzFrequenz"};
+  const std::string mTopicFrequency{"openWB/set/counter/0/get/frequency"};
   const std::string mTreeElemGridPowers{"PM1OBJ1.P_AC"};
-  std::vector<std::string> mTopicGridPowersVec{"openWB/set/evu/WPhase1",
-                                               "openWB/set/evu/WPhase2",
-                                               "openWB/set/evu/WPhase3"};
+  const std::string mTopicGridPowers{"openWB/set/counter/0/get/powers"};
   std::array<float, 3> mPowerValues{0.0f, 0.0f, 0.0f};
   const std::string mTreeElemVoltages{"PM1OBJ1.U_AC"};
-  std::vector<std::string> mTopicGridVoltagesVec{"openWB/set/evu/VPhase1",
-                                                 "openWB/set/evu/VPhase2",
-                                                 "openWB/set/evu/VPhase3"};
+  const std::string mTopicGridVoltages{"openWB/set/counter/0/get/voltages"};
   std::array<float, 3> mVoltageValues{0.0f, 0.0f, 0.0f};
   const std::string mTreeElemCurrents{"PM1OBJ1.I_AC"};
-  std::vector<std::string> mTopicGridCurrentsVec{"openWB/set/evu/APhase1",
-                                                 "openWB/set/evu/APhase2",
-                                                 "openWB/set/evu/APhase3"};
+  const std::string mTopicGridCurrents{"openWB/set/counter/0/get/currents"};
   std::array<float, 3> mCurrentValues{0.0f, 0.0f, 0.0f};
-  std::vector<std::string> mTopicGridPowerFactorVec{"openWB/set/evu/PfPhase1",
-                                                    "openWB/set/evu/PfPhase2",
-                                                    "openWB/set/evu/PfPhase3"};
+  const std::string mTopicGridPowerFactor{"openWB/set/counter/0/get/power_factors"};
   const std::string mPowerFactorValue{"1.0"};
 
   const std::string mTreeElemBatteryPower{"ENERGY.GUI_BAT_DATA_POWER"};
-  const std::string mTopicBatteryPower{"openWB/set/houseBattery/W"};
-  const std::string mTopicBatteryImportedEnergy{
-      "openWB/set/houseBattery/WhImported"};
-  const std::string mTopicBatteryExportedEnergy{
-      "openWB/set/houseBattery/WhExported"};
-  const std::string mTopicBatterySoc{"openWB/set/houseBattery/%Soc"};
+  const std::string mTopicBatteryPower{"openWB/set/bat/1/get/power"};
+  const std::string mTopicBatteryImportedEnergy{"openWB/set/bat/1/get/imported"};
+  const std::string mTopicBatteryExportedEnergy{"openWB/set/bat/1/get/exported"};
+  const std::string mTopicBatterySoc{"openWB/set/bat/1/get/soc"};
   const std::string mTreeElemBatterySoc{"ENERGY.GUI_BAT_DATA_FUEL_CHARGE"};
 
   mqttPublisher mPublisher;
@@ -84,7 +76,6 @@ private:
                               std::string *buffer);
   void ParseResponse(const std::string &response);
   void ProcessData();
-  void ProcessTimeInformation();
   void ProcessInverterData();
   void ProcessGridData();
   void ProcessBatteryData();

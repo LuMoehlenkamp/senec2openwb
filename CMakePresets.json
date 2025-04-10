@@ -1,0 +1,16 @@
+{
+  "version": 8,
+  "configurePresets": [
+    {
+      "name": "GCC 11.4.0 x86_64-linux-gnu",
+      "displayName": "GCC 11.4.0 x86_64-linux-gnu",
+      "description": "Using compilers: C = /usr/bin/gcc-11",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_C_COMPILER": "/usr/bin/gcc-11",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    }
+  ]
+}

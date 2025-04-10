@@ -39,7 +39,6 @@ void SenecDataAcquisitionLibCurl::Acquire()
     std::cerr << "Curl not initialized" << '\n';
     return;
   }
-  // std::cout << "attempting to acquire data" << '\n';
   CURLcode res;
   std::string response;
   curl_easy_setopt(mCurl, CURLOPT_URL, mUrl.c_str());
@@ -121,7 +120,6 @@ void SenecDataAcquisitionLibCurl::ParseResponse(const std::string &response)
 void SenecDataAcquisitionLibCurl::ProcessData()
 {
   try {
-    // ProcessTimeInformation();
     ProcessInverterData();
     ProcessGridData();
     ProcessBatteryData();
@@ -134,34 +132,12 @@ void SenecDataAcquisitionLibCurl::ProcessData()
   }
 }
 
-void S2O::SenecDataAcquisitionLibCurl::ProcessTimeInformation()
-{
-  auto utc_offset_str = mTree.get<std::string>(mTreeElemRtcOffset);
-  ConversionResultOpt utc_offset_cr = Conversion::Convert(utc_offset_str);
-
-  std::string time = mTree.get<std::string>(mTreeElemWebTime);
-  ConversionResultOpt time_cr = Conversion::Convert(time);
-
-  if (time_cr.is_initialized() && utc_offset_cr.is_initialized())
-  {
-    auto utc_offset = boost::get<int>(utc_offset_cr.get());
-    std::chrono::minutes offset_minutes(utc_offset);
-    std::chrono::seconds offset_seconds(offset_minutes);
-
-    auto timestamp = boost::get<unsigned>(time_cr.get());
-    std::time_t time_s_epoch = static_cast<std::time_t>(timestamp);
-    std::stringstream ss;
-    ss << std::put_time(std::localtime(&time_s_epoch), "%F %T.\n");
-    mPublisher.publishTime(ss.str()); // todo: refactor this method
-  }
-}
-
 void S2O::SenecDataAcquisitionLibCurl::ProcessInverterData()
 {
   // openWB/set/pv/1/W PV-Erzeugungsleistung in Watt, int, positiv
   std::string inv_power_raw_str = mTree.get<std::string>(mTreeElemInvPower);
   std::string inv_power_pub_str;
-  Conversion::ConvertToString(inv_power_raw_str, inv_power_pub_str, false, false);
+  Conversion::ConvertToString(inv_power_raw_str, inv_power_pub_str, true, 2);
   mPublisher.publishStr(mTopicInvPower, inv_power_pub_str);
 
   // openWB/set/pv/1/WhCounter Erzeugte Energie in Wh, float, nur positiv
@@ -175,7 +151,7 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
   // openWB/set/evu/W Bezugsleistung in Watt, int, positiv Bezug, negativ Einspeisung
   std::string grid_power_raw_str = mTree.get<std::string>(mTreeElemGridPower);
   std::string grid_power_pub_str;
-  Conversion::ConvertToString(grid_power_raw_str, grid_power_pub_str);
+  Conversion::ConvertToString(grid_power_raw_str, grid_power_pub_str, false, 2);
   mPublisher.publishStr(mTopicGridPower, grid_power_pub_str);
 
   // openWB/set/evu/WhImported Bezogene Energie in Wh, float, Punkt als Trenner, nur positiv
@@ -188,28 +164,28 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
   // openWB/set/evu/HzFrequenz oder openWB/set/evu/Hz Netzfrequenz in Hz, float, Punkt als Trenner
   std::string frequency_raw_str = mTree.get<std::string>(mTreeElemFreq);
   std::string frequency_pub_str;
-  Conversion::ConvertToString(frequency_raw_str, frequency_pub_str, false, true);
+  Conversion::ConvertToString(frequency_raw_str, frequency_pub_str, false, 2);
   mPublisher.publishStr(mTopicFrequency, frequency_pub_str);
 
   // openWB/set/evu/WPhase1 (2,3) Leistung in Watt für Phase 1 (2,3), float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
   std::vector<std::string> powers_raw_str_vec;
-  std::vector<float> powers_fl_vec;
   for (boost::property_tree::ptree::value_type &power : mTree.get_child(mTreeElemGridPowers))
   {
     powers_raw_str_vec.push_back(power.second.data());
   }
 
+  std::vector<std::string> powers_str_vec;
   auto power_vals_it(mPowerValues.begin());
-  for (auto pow_topics_it = mTopicGridPowersVec.begin(), raw_it = powers_raw_str_vec.begin();
+  for (auto raw_it = powers_raw_str_vec.begin();
        raw_it != powers_raw_str_vec.end();
-       ++pow_topics_it, ++raw_it, ++power_vals_it)
+       ++raw_it, ++power_vals_it)
   {
     std::string power_pub_str;
-    Conversion::ConvertToString(*raw_it, power_pub_str, false, true);
-    powers_fl_vec.push_back(std::stof(power_pub_str));
-    mPublisher.publishStr(*pow_topics_it, power_pub_str);
+    Conversion::ConvertToString(*raw_it, power_pub_str, false, 2);
+    powers_str_vec.push_back(power_pub_str);
     Conversion::ConvertToFloatVal(power_pub_str, *power_vals_it);
   }
+  mPublisher.publishStrVec(mTopicGridPowers, powers_str_vec);
 
   // openWB/set/evu/VPhase1 (2,3) Spannung in Volt für Phase 1 (2,3), float, Punkt als Trenner
   std::vector<std::string> volts_raw_str_vec;
@@ -218,16 +194,18 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
     volts_raw_str_vec.push_back(voltage.second.data());
   }
 
+  std::vector<std::string> volts_str_vec;
   auto volt_vals_it(mVoltageValues.begin());
-  for (auto volt_topics_it = mTopicGridVoltagesVec.begin(), raw_it = volts_raw_str_vec.begin();
+  for (auto raw_it = volts_raw_str_vec.begin();
        raw_it != volts_raw_str_vec.end();
-       ++volt_topics_it, ++raw_it, ++volt_vals_it)
+       ++raw_it, ++volt_vals_it)
   {
     std::string voltage_pub_str;
-    Conversion::ConvertToString(*raw_it, voltage_pub_str, false, true);
-    mPublisher.publishStr(*volt_topics_it, voltage_pub_str);
+    Conversion::ConvertToString(*raw_it, voltage_pub_str, false, 1);
+    volts_str_vec.push_back(voltage_pub_str);
     Conversion::ConvertToFloatVal(voltage_pub_str, *volt_vals_it);
   }
+  mPublisher.publishStrVec(mTopicGridVoltages, volts_str_vec);
 
   // openWB/set/evu/APhase1 (2,3) Strom in Ampere für Phase 1 (2,3), float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
   std::vector<std::string> amps_raw_str_vec;
@@ -236,31 +214,32 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessGridData()
     amps_raw_str_vec.push_back(current.second.data());
   }
 
+  std::vector<std::string> amps_str_vec;
   auto amps_vals_it(mCurrentValues.begin());
-  auto amps_topics_it = mTopicGridCurrentsVec.begin();
-  auto raw_it = amps_raw_str_vec.begin();
-  auto powers_it = powers_fl_vec.begin();
-  for ( ;
+  auto powers_it = mPowerValues.begin();
+  for (auto raw_it = amps_raw_str_vec.begin();
        raw_it != amps_raw_str_vec.end();
-       ++amps_topics_it, ++raw_it, ++powers_it, ++amps_vals_it)
+       ++raw_it, ++powers_it, ++amps_vals_it)
   {
     std::string current_pub_str;
-    Conversion::ConvertToString(*raw_it, current_pub_str, std::signbit(*powers_it), true);
-    mPublisher.publishStr(*amps_topics_it, current_pub_str);
+    Conversion::ConvertToString(*raw_it, current_pub_str, std::signbit(*powers_it), 2);
+    amps_str_vec.push_back(current_pub_str);
     Conversion::ConvertToFloatVal(current_pub_str, *amps_vals_it);
   }
+  mPublisher.publishStrVec(mTopicGridCurrents, amps_str_vec);
 
   // openWB/set/evu/PfPhase1 (2,3) Powerfaktor für Phase 1 (2,3), float, Punkt als Trenner, positiv Bezug, negativ Einspeisung
-  auto pf_topics_it = mTopicGridPowerFactorVec.begin();
   auto volt_value_it = mVoltageValues.begin();
   auto amps_value_it = mCurrentValues.begin();
   auto pow_value_it = mPowerValues.begin();
-  for (; pf_topics_it != mTopicGridPowerFactorVec.end(); ++pf_topics_it, ++volt_value_it, ++amps_value_it, ++pow_value_it)
+  std::vector<std::string> power_factor_str_vec;
+  for (; volt_value_it != mVoltageValues.end(); ++volt_value_it, ++amps_value_it, ++pow_value_it)
   {
-    float apparent_power(*volt_vals_it * *amps_value_it);
-    float power_factor(*pow_value_it / apparent_power);
-    mPublisher.publishStr(*pf_topics_it, std::to_string(power_factor));
+    float apparent_power((*volt_value_it) * (*amps_value_it));
+    float power_factor((*pow_value_it) / apparent_power);
+    power_factor_str_vec.push_back(Conversion::floatToString(power_factor, 2));
   }
+  mPublisher.publishStrVec(mTopicGridPowerFactor, power_factor_str_vec);
 }
 
 void S2O::SenecDataAcquisitionLibCurl::ProcessBatteryData()
@@ -268,7 +247,7 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessBatteryData()
   // openWB/set/houseBattery/W Speicherleistung in Watt, int, positiv Ladung, negativ Entladung   -> done
   std::string bat_power_raw_str = mTree.get<std::string>(mTreeElemBatteryPower);
   std::string bat_power_pub_str;
-  Conversion::ConvertToString(bat_power_raw_str, bat_power_pub_str);
+  Conversion::ConvertToString(bat_power_raw_str, bat_power_pub_str, false, 2);
   mPublisher.publishStr(mTopicBatteryPower, bat_power_pub_str);
 
   // openWB/set/houseBattery/WhImported Geladene Energie in Wh, float, nur positiv
@@ -281,6 +260,6 @@ void S2O::SenecDataAcquisitionLibCurl::ProcessBatteryData()
   // openWB/set/houseBattery/%Soc Ladestand des Speichers, int, 0-100
   std::string bat_soc_raw_str = mTree.get<std::string>(mTreeElemBatterySoc);
   std::string bat_soc_pub_str;
-  Conversion::ConvertToString(bat_soc_raw_str, bat_soc_pub_str);
+  Conversion::ConvertToString(bat_soc_raw_str, bat_soc_pub_str, false, 0);
   mPublisher.publishStr(mTopicBatterySoc, bat_soc_pub_str);
 }
