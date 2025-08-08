@@ -1,0 +1,20 @@
+{
+  "senec_update_time": 5,
+  "senec_timeout_time": 30,
+  "senec_connect_timeout_time": 10,
+  "mqtt": {
+    "broker": "mosquitto",
+    "port": 1883,
+    "topics": {
+      "senec_data": "senec/+/data",
+      "senec_status": "senec/+/status"
+    }
+  },
+  "database": {
+    "url": "sqlite:///./data/resource_management.db"
+  },
+  "api": {
+    "host": "0.0.0.0",
+    "port": 8000
+  }
+}

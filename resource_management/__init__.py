@@ -1,0 +1,1 @@
+"""Resource Management Service for SENEC2OpenWB"""
