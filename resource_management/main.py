@@ -25,12 +25,35 @@ class ConfigManager:
     CONFIG_PATH = "./config.json"
     
     def __init__(self):
+        # Load from environment variables first, then config file, then defaults
+        import os
+        import json
+        
         # Default values matching the C++ implementation pattern
-        self.senec_update_time = 5  # seconds
-        self.senec_timeout_time = 30  # seconds
-        self.senec_connect_timeout_time = 10  # seconds
-        self.mqtt_broker = "mosquitto"
-        self.mqtt_port = 1883
+        self.senec_update_time = int(os.getenv('SENEC_UPDATE_TIME', 5))
+        self.senec_timeout_time = int(os.getenv('SENEC_TIMEOUT_TIME', 30))
+        self.senec_connect_timeout_time = int(os.getenv('SENEC_CONNECT_TIMEOUT_TIME', 10))
+        self.mqtt_broker = os.getenv('MQTT_BROKER', 'mosquitto')
+        self.mqtt_port = int(os.getenv('MQTT_PORT', 1883))
+        
+        # Try to load from config file if it exists
+        try:
+            if os.path.exists(self.CONFIG_PATH):
+                with open(self.CONFIG_PATH, 'r') as f:
+                    config_data = json.load(f)
+                    
+                # Override defaults with config file values
+                self.senec_update_time = config_data.get('senec_update_time', self.senec_update_time)
+                self.senec_timeout_time = config_data.get('senec_timeout_time', self.senec_timeout_time)
+                self.senec_connect_timeout_time = config_data.get('senec_connect_timeout_time', self.senec_connect_timeout_time)
+                
+                mqtt_config = config_data.get('mqtt', {})
+                self.mqtt_broker = mqtt_config.get('broker', self.mqtt_broker)
+                self.mqtt_port = mqtt_config.get('port', self.mqtt_port)
+                
+        except Exception as e:
+            logger.warning(f"Could not load config file {self.CONFIG_PATH}: {e}")
+            logger.info("Using environment variables and defaults")
         
     def get_senec_update_time(self) -> Optional[int]:
         return self.senec_update_time
@@ -97,17 +120,21 @@ class ResourceManagementService:
         """Process energy data and store in database"""
         try:
             # Parse data (simplified - in real implementation would parse JSON)
-            # For demo purposes, using mock data
+            # For demo purposes, using mock data but with error handling
+            from models import engine
             with Session(engine) as session:
+                # In real implementation, parse the JSON data from MQTT
+                # Example: data_dict = json.loads(data)
                 energy_data = EnergyData(
-                    power_generation=1500.0,
-                    power_consumption=800.0,
-                    battery_charge_level=75.0,
-                    grid_power=700.0
+                    power_generation=1500.0,  # data_dict.get('power_generation', 0.0)
+                    power_consumption=800.0,   # data_dict.get('power_consumption', 0.0)
+                    battery_charge_level=75.0, # data_dict.get('battery_charge_level', 0.0)
+                    grid_power=700.0          # data_dict.get('grid_power', 0.0)
                 )
                 session.add(energy_data)
                 session.commit()
-                logger.info("Energy data stored successfully")
+                session.refresh(energy_data)
+                logger.info(f"Energy data stored successfully with ID: {energy_data.id}")
                 
         except Exception as e:
             logger.error(f"Error storing energy data: {e}")
@@ -115,16 +142,19 @@ class ResourceManagementService:
     def process_status_data(self, data: str):
         """Process status data and store in database"""
         try:
+            from models import engine
             with Session(engine) as session:
+                # In real implementation, parse the JSON data from MQTT
                 status_data = SystemStatus(
-                    system_state="RUNNING",
-                    temperature=45.0,
-                    error_count=0,
-                    uptime_seconds=3600
+                    system_state="RUNNING",    # data_dict.get('system_state', 'UNKNOWN')
+                    temperature=45.0,          # data_dict.get('temperature')
+                    error_count=0,             # data_dict.get('error_count', 0)
+                    uptime_seconds=3600        # data_dict.get('uptime_seconds', 0)
                 )
                 session.add(status_data)
                 session.commit()
-                logger.info("Status data stored successfully")
+                session.refresh(status_data)
+                logger.info(f"Status data stored successfully with ID: {status_data.id}")
                 
         except Exception as e:
             logger.error(f"Error storing status data: {e}")
@@ -144,6 +174,7 @@ class ResourceManagementService:
     async def manage_resources(self):
         """Manage energy resources based on current data"""
         try:
+            from models import engine
             with Session(engine) as session:
                 # Get latest energy data
                 latest_energy = session.exec(
@@ -151,18 +182,52 @@ class ResourceManagementService:
                 ).first()
                 
                 if latest_energy:
-                    # Simple resource allocation logic
+                    # Simple resource allocation logic with more sophistication
+                    allocations_created = []
+                    
+                    # Battery charging priority
                     if latest_energy.battery_charge_level < 20:
-                        # Prioritize battery charging
                         allocation = ResourceAllocation(
-                            resource_type="battery",
-                            allocated_power=1000.0,
+                            resource_type="battery_charge",
+                            allocated_power=min(2000.0, latest_energy.power_generation * 0.8),
                             priority=1,
                             is_active=True
                         )
                         session.add(allocation)
+                        allocations_created.append("battery_charge")
+                        
+                    # Grid export when battery is full
+                    elif latest_energy.battery_charge_level > 90 and latest_energy.power_generation > latest_energy.power_consumption:
+                        excess_power = latest_energy.power_generation - latest_energy.power_consumption
+                        allocation = ResourceAllocation(
+                            resource_type="grid_export",
+                            allocated_power=excess_power,
+                            priority=3,
+                            is_active=True
+                        )
+                        session.add(allocation)
+                        allocations_created.append("grid_export")
+                    
+                    # Load balancing
+                    elif latest_energy.power_consumption > latest_energy.power_generation:
+                        deficit = latest_energy.power_consumption - latest_energy.power_generation
+                        if latest_energy.battery_charge_level > 30:
+                            allocation = ResourceAllocation(
+                                resource_type="battery_discharge",
+                                allocated_power=min(deficit, 1500.0),
+                                priority=2,
+                                is_active=True
+                            )
+                            session.add(allocation)
+                            allocations_created.append("battery_discharge")
+                    
+                    if allocations_created:
                         session.commit()
-                        logger.info("Battery charging prioritized")
+                        logger.info(f"Resource allocations created: {allocations_created}")
+                    else:
+                        logger.info("No resource allocation changes needed")
+                else:
+                    logger.warning("No energy data available for resource management")
                         
         except Exception as e:
             logger.error(f"Error in resource management: {e}")
