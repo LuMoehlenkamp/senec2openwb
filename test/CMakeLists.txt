@@ -3,16 +3,18 @@ set(PROJECT_UNIT_TESTS_NAME ${PROJECT_NAME_STR}_unit_tests)
 
 # Dependencies
 find_package(Boost REQUIRED COMPONENTS
-                      filesystem
+                      # filesystem
                       # log_setup
                       # log
-                      program_options
+                      # program_options
                       regex
                       serialization
                       system
                       thread
                       timer
                       unit_test_framework)
+
+find_package(CURL REQUIRED)
 
 # Gather the header and source files
 file(GLOB UNIT_TESTS_INC_FILES ${PROJECT_SOURCE_DIR}/test/*.hh)
@@ -47,7 +49,7 @@ target_link_libraries(${PROJECT_UNIT_TESTS_NAME}
                       stdc++fs
                       ssl
                       crypto
-                      curl
+                      CURL::libcurl
                       )
 enable_testing()
 add_test(MainTest ${PROJECT_UNIT_TESTS_NAME})

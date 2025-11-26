@@ -1,44 +1,38 @@
 # uses a multi-stage build strategy
 
 # senec2openwb build stage
-# takes the base alpine image and enhances it with the build time dependencies
-FROM --platform=$BUILDPLATFORM alpine:3.19.0 AS build
-RUN uname -a
-ARG TARGETARCH
 
-RUN apk update && apk add --no-cache build-base cmake boost1.82-dev=1.82.0-r3 mosquitto-dev git curl curl-dev openssl openssl-dev g++-cross-embedded gcc-cross-embedded
-# gcc-aarch64-none-elf g++-aarch64-none-elf g++-cross-embedded gcc-cross-embedded g++-cross-embedded gcc-aarch64-none-elf g++-aarch64-none-elf openssl openssl openssl-dev
+FROM --platform=$BUILDPLATFORM debian:bookworm AS build
 
-WORKDIR /senec2openwb
-RUN git clone --recurse-submodules https://github.com/eclipse/paho.mqtt.cpp.git
+RUN apt-get update && apt-get install -y python3 python3-pip python3-venv cmake build-essential gcc-aarch64-linux-gnu g++-aarch64-linux-gnu git ninja-build
 
-ARG TARGETPLATFORM
-
-WORKDIR /senec2openwb/paho.mqtt.cpp
-RUN cd /senec2openwb/paho.mqtt.cpp
-RUN git checkout v1.4.0
-RUN git submodule init
-RUN git submodule update
-RUN cmake -Bbuild -H. -DPAHO_WITH_MQTT_C=ON -DPAHO_BUILD_STATIC=ON -DPAHO_BUILD_DOCUMENTATION=OFF -DPAHO_BUILD_SAMPLES=OFF -DPAHO_WITH_SSL=OFF
-RUN cmake --build build/ --target install --parallel 4
-RUN ldconfig /etc/ld.so.conf.d
+RUN python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+RUN pip3 install conan
+RUN conan --version
+RUN conan profile detect --force
 
 WORKDIR /senec2openwb
 COPY src/ ./src/
 COPY test/ ./test/
 COPY CMakeLists.txt .
-COPY toolchain.cmake .
+COPY conanfile.txt .
+
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 
 WORKDIR /senec2openwb/build
-RUN cmake -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --parallel 4
-# -DCMAKE_TOOLCHAIN_FILE=./toolchain.cmake
-# senec2openwb run stage
-FROM alpine:3.19.0
-# FROM arm64v8/alpine:latest
+RUN conan install .. --build=missing
+# --profile:host=default --profile:build=default
+RUN cmake -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_TOOLCHAIN_FILE=Release/generators/conan_toolchain.cmake ..
+RUN cmake --build . --parallel 4
 
-RUN apk update && apk add --no-cache curl libstdc++ boost1.82-program_options=1.82.0-r3 boost1.82-filesystem=1.82.0-r3 boost1.82-log=1.82.0-r3 boost1.82-log_setup=1.82.0-r3
-RUN addgroup -S ludger && adduser -S ludger -G ludger
+# ---------------------------------------------------------------------------------
+FROM debian:bookworm-slim
+
+RUN addgroup --system ludger && adduser --system --ingroup ludger ludger
 USER ludger:ludger
+
 COPY --chown=ludger:ludger --from=build ./senec2openwb/bin/senec2openwb /app/
 RUN mkdir -p /app/dat
 RUN chmod -R 755 /app/dat/
@@ -47,4 +41,5 @@ RUN chmod -R 755 /app/res/
 
 WORKDIR /app
 USER ludger:ludger
+# RUN file /app/senec2openwb
 ENTRYPOINT [ "./senec2openwb" ]

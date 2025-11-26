@@ -11,6 +11,45 @@
         "CMAKE_C_COMPILER": "/usr/bin/gcc-11",
         "CMAKE_BUILD_TYPE": "Debug"
       }
+    },
+    {
+      "name": "GCC 13.2.0 x86_64-linux-gnu",
+      "displayName": "GCC 13.2.0 x86_64-linux-gnu",
+      "description": "Using compilers: C = /usr/bin/gcc, CXX = /usr/bin/g++",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_C_COMPILER": "/usr/bin/gcc-11",
+        "CMAKE_CXX_COMPILER": "/usr/bin/g++-13",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "GCC 13.3.0 x86_64-linux-gnu",
+      "displayName": "GCC 13.3.0 x86_64-linux-gnu",
+      "description": "Using compilers: C = /usr/bin/gcc, CXX = /usr/bin/g++",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_C_COMPILER": "/usr/bin/gcc-11",
+        "CMAKE_CXX_COMPILER": "/usr/bin/g++-13",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "GCC 14.2.0 x86_64-linux-gnu",
+      "displayName": "GCC 14.2.0 x86_64-linux-gnu",
+      "description": "Using compilers: C = /usr/bin/gcc-14, CXX = /usr/bin/g++-14",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/out/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+        "CMAKE_C_COMPILER": "/usr/bin/gcc-14",
+        "CMAKE_CXX_COMPILER": "/usr/bin/g++-14",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
     }
   ]
 }
